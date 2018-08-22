@@ -11,10 +11,10 @@ events.df <- events.df %>%
   mutate(sampledate = as.Date(sampledate),
          salzone = case_when(
            salzone %in% c("tf", "fe") ~ "f",
-           salzone == "me" ~ "m",
-           salzone == "oe" ~ "o",
-           salzone == "pe" ~ "p",
-           TRUE ~ salzone
+           salzone %in% c("m", "me") ~ "m",
+           salzone %in% c("o", "oe") ~ "o",
+           salzone %in% c("p", "pe") ~ "p",
+           TRUE ~ as.character(NA)
          ))
 
 ## ------------------------------------------------------------------------
@@ -23,9 +23,8 @@ events.sub <- events.df %>%
   distinct()
 
 ## ------------------------------------------------------------------------
-old.salzone <- readxl::read_excel(file.path(project.dir, "data/jackie_data/Data 2013_4plus-phyto-metrics.xlsx"),
-                         sheet = "DATA_4+biometrics",
-                         skip = 1) %>% 
+old.salzone <- readxl::read_excel(file.path(project.dir, "data/jackie_data/JMJ_PIBI_Salzone_Data.xlsx"),
+                         sheet = "JMJ Salzone+Scores") %>% 
   clean_up() %>% 
   select(station, sample_date, ibi_salzone) %>% 
   mutate(sample_date = as.Date(sample_date)) %>% 

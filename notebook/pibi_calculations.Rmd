@@ -1,5 +1,5 @@
 ---
-title: "PIBI Notebook: Draft"
+title: "PIBI Calculations"
 author: "Zachary M. Smith"
 output:
   html_document:
@@ -17,10 +17,9 @@ link-citations: true
 ```{r, echo=FALSE, cache=FALSE}
 evaluate <- TRUE
 cache.me <- FALSE
-run.cedr.acquisition <- FALSE
+run.cedr.acquisition <- TRUE
 run.itis.acquisition <- FALSE
 ```
-
 
 ## Introduction
 ```{r child = 'sections/intro.Rmd', eval=TRUE}
@@ -69,14 +68,8 @@ run.itis.acquisition <- FALSE
 
 ```
 
-### Rating Exploration
+## Ratings
 ```{r child = 'sections/map_ratings.Rmd', eval=TRUE}
-
-```
-
-## Appendix A: Score Comparisons
-
-```{r child = 'sections/appendix_a_master.Rmd', eval=TRUE}
 
 ```
 

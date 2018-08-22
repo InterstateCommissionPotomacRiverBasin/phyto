@@ -1,0 +1,30 @@
+---
+title: "Untitled"
+author: "Zachary M. Smith"
+date: "August 21, 2018"
+output: html_document
+---
+
+
+### Summary of Issues
+```{r child = 'appendix/summary.Rmd', eval=TRUE}
+
+```
+
+### Validation of R-Script Calculations
+```{r child = 'appendix/validation_old_values.Rmd', eval=TRUE}
+
+```
+
+```{r child = 'appendix/validation_scoring_disagreement.Rmd', eval=TRUE}
+
+```
+
+```{r child = 'appendix/validation_metric_disagreement.Rmd', eval=TRUE}
+
+```
+
+### Conclusion
+```{r child = 'appendix/conclusions.Rmd', eval=TRUE}
+
+```

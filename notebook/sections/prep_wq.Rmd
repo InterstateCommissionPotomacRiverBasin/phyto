@@ -7,44 +7,18 @@ output: html_document
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 ```
 
-Phytoplankton sampling event data obtained from CEDR ([Download Monitoring Event]) is imported.
+Phytoplankton sampling event data obtained from CEDR ([Download Monitoring Event]) is imported any rows that contain a `problem` flag are removed.
 ```{r}
-wq.df <- data.table::fread(file.path(project.dir, "data/water_quality/cedr_wq.csv"),
+wq.raw <- data.table::fread(file.path(project.dir, "data/water_quality/cedr_wq.csv"),
                             data.table = FALSE,
-                           na.strings = c(""))
-```
-
-Convert the sample date (`sampledate`) to class date.
-```{r}
-wq.df <- wq.df %>% 
-  mutate(sampledate = as.Date(sampledate))
-```
-
-Extract the salinity zone (`salzone`) found in `bay.df`.
-```{r}
-bay.salzone <- bay.df %>% 
-  select(station, sampledate, salzone) %>% 
-  distinct()
-```
-
-Append the salinity zone (`salzone`) to `wq.df`.
-```{r}
-wq.df <- inner_join(wq.df, bay.salzone, by = c("station", "sampledate"))
-```
-
-## Processing
-
-The phytoplankton indices only utilize measures of Dissolved Organic Carbon (DOC), chlorophyll a, and pheophytin. Therefore, only these water quality parameters are retained.
-```{r}
-wq.df <- wq.df %>% 
-  filter(is.na(problem)) %>% 
-  unite(parameter, layer, parameter) %>% 
-  filter(str_detect(parameter, "chla|pheo|doc"))
+                           na.strings = c("")) %>% 
+  filter(is.na(problem),
+         parameter %in% c("chla", "doc", "pheo"))
 ```
 
 The stations with water quality data are plotted using `leaflet`, to provide a visual reference and check of the data.
 ```{r}
-stations.df <- wq.df %>% 
+stations.df <- wq.raw %>% 
   dplyr::select(station, agency, source, latitude, longitude) %>% 
   distinct() %>% 
   mutate(longitude = jitter(longitude, amount = 0.0005),
@@ -65,65 +39,144 @@ leaflet(stations.df) %>%
   leaflet::setView(-76.4, lat = 38, zoom = 7) 
 ```
 
-The following chunks of code summarize the water quality data according the the Methods section in [@BuchananPhytoplanktonreferencecommunities2005] (page 139). The water quality data is divided into separate data frames, manipulated accordingly, and then appended back together.
+## Preprocessing
 
-Surface chlorophyll a ("s_chla") is extracted as a separate data frame and the summarized to represent the mean value for each station, replicate type, and date.
+Dissolved organic carbon (DOC), surface chlorophyll a, and depth integrated
+chlorophyll a, and pheophytin are the five water quality parameters retained for PIBI
+calculations. These five water quality parameters are collected by the CBP water quality
+monitoring programs. PIBI metrics and the thresholds used to score the metrics depend on the
+salzone of the layer above the pycnocline where a sample was collected. Salzone is based on
+the average salinity in the above-pycnocline layer (includes surface). Dissolved organic carbon
+(DOC) chlorophyll a, and depth-integrated pheophytin are three parameters used as
+phytoplankton metrics. Depth-integrated chlorophyll a is used in calculations of chlorophyll cell content (i.e., ratio of chlorophyll a to total biomass).
+
+### Water Quality Parameters
+
+The following chunks of code summarize the water quality data according the the Methods section in Buchanan et al. [-@BuchananPhytoplanktonreferencecommunities2005, p. 139]. The water quality data is divided into separate data frames, manipulated accordingly, and then appended back together.
+
+Convert the sample date (`sampledate`) to class date.
 ```{r}
-wq.s_chla <- wq.df %>% 
-  select(station, samplereplicatetype, sampledate, parameter, measurevalue) %>% 
-  filter(parameter == "s_chla") %>% 
-  distinct() %>% 
-  select(-samplereplicatetype) %>% 
-  group_by_at(vars(-measurevalue)) %>% 
-  summarize(measurevalue = mean(measurevalue, is.na = TRUE)) %>% 
-  ungroup()
+wq.df <- wq.raw %>% 
+  mutate(sampledate = as.Date(sampledate))
 ```
 
-If the upper pycnocline depth is not specified, then the mean for each parameter (i.e. chlorophyll a, pheophytin, DOC) is found using samples from the entire water column [@BuchananPhytoplanktonreferencecommunities2005] (page 139).
+Identify if there is a `pycnocline` present. If there was no reported `upperpycnocline` or `upperpycnocline` equals zero, then no `pycnocline` was detected (`FALSE`).
 ```{r}
-wq.sub.tf <- wq.df %>% 
-  filter(salzone == "f") %>% 
-  #filter(is.na(upperpycnocline)) %>% 
-  #filter(startsWith(station, "f")) %>% 
-  select(station, samplereplicatetype, sampledate, parameter, measurevalue) %>% 
-  filter(grepl("chla|pheo|doc", parameter)) %>% 
-  distinct() %>% 
-  mutate(parameter = case_when(
-    grepl("chla", parameter) ~ "chla",
-    grepl("pheo", parameter) ~ "pheo",
-    grepl("doc", parameter) ~ "doc",
-    TRUE ~ "ERROR"
-  )) %>% 
-  select(-samplereplicatetype) %>% 
-  group_by_at(vars(-measurevalue)) %>% 
-  summarize(measurevalue = mean(measurevalue)) %>% 
-  ungroup()
+wq.df <- wq.df %>% 
+  mutate(pycnocline = case_when(
+    is.na(upperpycnocline) ~ FALSE,
+    upperpycnocline == 0 ~ FALSE,
+    TRUE ~ TRUE
+  ))
 ```
 
-If the upper pycnocline depth is specified, then the mean for each parameter (i.e. chlorophyll a, pheophytin, DOC) is found using samples specified as above the pycnocline ("ap") and surface ("s") [@BuchananPhytoplanktonreferencecommunities2005] (page 139).
+Samples reported at monitoring station, CB3.3C, frequently reported an upperpycnocline for some samples but not all of the samples. This created an issue with the code above because it would duplicate the sampling event into a above pycnocline summary and a water column summary. This code identifies these duplicates and alters the `pycnocline` column to equal `TRUE` for these instances.
 ```{r}
-wq.sub.pycno <- wq.df %>% 
-  filter(salzone != "f",
-    #!is.na(upperpycnocline),
-         grepl("ap_|s_", parameter)) %>% 
-  #filter(!startsWith(station, "f")) %>% 
-  select(station, samplereplicatetype, sampledate, parameter, measurevalue) %>% 
+issue.df <- wq.df %>% 
+  select(monitoringstation, sampledate,
+         pycnocline, upperpycnocline, lowerpycnocline) %>% 
   distinct() %>% 
-  mutate(parameter = case_when(
-    parameter %in% c("ap_chla", "s_chla") ~ "chla",
-    parameter %in% c("ap_pheo", "s_pheo") ~ "pheo",
-    parameter %in% c("ap_doc", "s_doc") ~ "doc",
-    TRUE ~ "ERROR"
-  )) %>% 
-  select(-samplereplicatetype) %>% 
-  group_by_at(vars(-measurevalue)) %>% 
-  summarize(measurevalue = mean(measurevalue)) %>% 
-  ungroup()
+  group_by(monitoringstation, sampledate) %>% 
+  mutate(count = n()) %>% 
+  ungroup() %>% 
+  filter(count == 2,
+         complete.cases(.)) %>% 
+  rename(up = upperpycnocline,
+         lp = lowerpycnocline) %>% 
+  select(-pycnocline)
+  
+
+wq.df <- left_join(wq.df, issue.df, by = c("monitoringstation", "sampledate")) %>% 
+  mutate(pycnocline = if_else(is.na(count), pycnocline, TRUE),
+         upperpycnocline = if_else(is.na(up), upperpycnocline, up),
+         lowerpycnocline = if_else(is.na(lp), lowerpycnocline, lp)
+         )
 ```
 
-The separate water quality data frames are appended together.
+Keep only the necessary columns.
 ```{r}
-wq.sub <- bind_rows(wq.s_chla, wq.sub.tf, wq.sub.pycno) %>% 
+wq.df <- wq.df %>% 
+  select(station, source, sampledate, samplereplicatetype,
+         depth, layer, 
+         pycnocline, upperpycnocline, lowerpycnocline,
+         parameter, measurevalue) %>% 
+  distinct()
+```
+
+Surface chlorophyll a ("s_chla") is extracted as a separate data frame and then appended back to `wq.df`.
+```{r}
+wq.df <- wq.df %>% 
+  filter(layer == "s", 
+         parameter == "chla") %>% 
+  unite(parameter, c("layer", "parameter"), remove = FALSE) %>% 
+  bind_rows(wq.df)
+```
+
+Create a function to consistently aggregate and find the mean of the `measurevalue`. This function:
+1. Groups by all columns but `measurevalue` and `samplereplicatedtype`
+2. Aggregates by the grouped columns and finds the mean value of `measurevalue`
+3. Groups by all columns but `measurevalue` and `layer`
+4. Aggregates by the grouped columns and finds the mean value of `measurevalue`
+5. Groups by all columns but `measurevalue` and `depth`
+6. Aggregates by the grouped columns and finds the mean value of `measurevalue`
+```{r}
+avg_wq <- function(x) {
+  final.df <- x %>% 
+    group_by_at(vars(-measurevalue, -samplereplicatetype)) %>% 
+    summarize(measurevalue = mean(measurevalue, na.rm = TRUE)) %>% 
+    group_by_at(vars(-measurevalue, -layer)) %>%
+    summarize(measurevalue = mean(measurevalue, na.rm = TRUE)) %>%
+    group_by_at(vars(-measurevalue, -depth)) %>% 
+    summarize(measurevalue = mean(measurevalue, na.rm = TRUE)) %>% 
+    ungroup()
+}
+```
+
+
+```{r, eval=FALSE, echo=FALSE}
+# If the upper pycnocline depth is specified, then the mean for each parameter (i.e. salinity, chlorophyll a, pheophytin, DOC) is found using samples specified as above the pycnocline ("ap") and surface ("s") Buchanan et al. [-@BuchananPhytoplanktonreferencecommunities2005, p. 139]. If the upper pycnocline depth is not specified, then the mean for each parameter (i.e. salinity, chlorophyll a, pheophytin, DOC) is found using samples from the entire water column Buchanan et al. [-@BuchananPhytoplanktonreferencecommunities2005, p. 139]. Finally, join the two data frames back together to re-create `wq.df`.
+pdepth.df <- events.df %>% 
+  mutate(sampledate = as.Date(sampledate)) %>% 
+  select(station, sampledate, pdepth) %>% 
+  dplyr::distinct()
+
+wq.df <- left_join(wq.df, pdepth.df, by = c("station", "sampledate"))
+abp.df <- wq.df %>% 
+  filter(pycnocline == TRUE,
+         # source != "vims",
+         depth <= upperpycnocline
+         # depth <= pdepth
+         ) %>% 
+  avg_wq()
+
+vims.df <- wq.df %>% 
+  filter(pycnocline == TRUE,
+         source == "vims",
+         depth <= lowerpycnocline) %>% 
+  avg_wq()
+
+wc.df <- wq.df %>% 
+  filter(pycnocline == FALSE) %>% 
+  avg_wq()
+
+wq.df <- bind_rows(abp.df,
+                   # vims.df,
+                   wc.df) %>% 
+  rename(date = sampledate)
+```
+
+The pychnocline depth (`pdepth`) is extracted from the the event data (`events.df`) and joined with the water quality data (`wq.df`). Only rows with a `depth` above or equal to the `pdepth` are retained. The `avg_wq()` function created above is used to find the average water quality value.
+```{r}
+pdepth.df <- events.df %>% 
+  filter(layer %in% c("ap", "wc")) %>% 
+  mutate(sampledate = as.Date(sampledate)) %>% 
+  select(station, sampledate, pdepth) %>% 
+  dplyr::distinct()
+
+wq.df <- left_join(wq.df, pdepth.df, by = c("station", "sampledate"))
+wq.df <- wq.df %>% 
+  filter(depth <= pdepth) %>% 
+  avg_wq() %>% 
   rename(date = sampledate)
 ```
 
@@ -145,17 +198,17 @@ The process to identify water quality dates within the ± 3 day window of the ph
 library(parallel)
 n.cores <- detectCores() - 1
 cl <- makeCluster(n.cores)
-clusterExport(cl = cl, varlist = c("wq.sub", "bay.sub"))
+clusterExport(cl = cl, varlist = c("wq.df", "bay.sub"))
 clusterEvalQ(cl, c(library(dplyr))) %>% invisible()
 ```
 
-For each station and sample date combination (each row) in `bay.sub`, all of the `wq.sub` samples, from the same station, within a ± 3 day window are found. If there are multiple `wq.sub` samples within the ± 3 day window, then the sample collected closest to the phytoplankton data is retained. There is a possibility that water quality samples could be collected at equal intervals before and after phytoplankton sampling. For example, water quality samples could have been collected one day before and one day after phytoplankton sampling. In those instances the sample collected prior to the phytoplankton sampling is retained.
+For each station and sample date combination (each row) in `bay.sub`, all of the `wq.df` samples, from the same station, within a ± 3 day window are found. If there are multiple `wq.df` samples within the ± 3 day window, then the sample collected closest to the phytoplankton data is retained. There is a possibility that water quality samples could be collected at equal intervals before and after phytoplankton sampling. For example, water quality samples could have been collected one day before and one day after phytoplankton sampling. In those instances the sample collected prior to the phytoplankton sampling is retained.
 ```{r}
 env.df <- parLapply(cl, 1:nrow(bay.sub), function(row.i) {
 
   sub.df <- slice(bay.sub, row.i)
   #----------------------------------------------------------------------------
-  sub.env <- wq.sub %>% 
+  sub.env <- wq.df %>% 
     filter(station == sub.df$station,
            date >= sub.df$lower_date,
            date <= sub.df$upper_date)
@@ -211,6 +264,6 @@ bay.df <- left_join(bay.df, env.wide, by = c("station", "sampledate"))
 
 Remove objects that are no longer necessary.
 ```{r}
-#rm(env.df, env.wide, wq.df, wq.sub, bay.sub)
+#rm(env.df, env.wide, wq.df, wq.df, bay.sub)
 ```
 

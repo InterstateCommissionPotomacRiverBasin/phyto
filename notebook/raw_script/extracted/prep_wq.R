@@ -2,30 +2,13 @@
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 
 ## ------------------------------------------------------------------------
-wq.df <- data.table::fread(file.path(project.dir, "data/water_quality/cedr_wq.csv"),
+wq.raw <- data.table::fread(file.path(project.dir, "data/water_quality/cedr_wq.csv"),
                             data.table = FALSE,
-                           na.strings = c(""))
+                           na.strings = c("")) %>% 
+  filter(is.na(problem))
 
 ## ------------------------------------------------------------------------
-wq.df <- wq.df %>% 
-  mutate(sampledate = as.Date(sampledate))
-
-## ------------------------------------------------------------------------
-bay.salzone <- bay.df %>% 
-  select(station, sampledate, salzone) %>% 
-  distinct()
-
-## ------------------------------------------------------------------------
-wq.df <- inner_join(wq.df, bay.salzone, by = c("station", "sampledate"))
-
-## ------------------------------------------------------------------------
-wq.df <- wq.df %>% 
-  filter(is.na(problem)) %>% 
-  unite(parameter, layer, parameter) %>% 
-  filter(str_detect(parameter, "chla|pheo|doc"))
-
-## ------------------------------------------------------------------------
-stations.df <- wq.df %>% 
+stations.df <- wq.raw %>% 
   dplyr::select(station, agency, source, latitude, longitude) %>% 
   distinct() %>% 
   mutate(longitude = jitter(longitude, amount = 0.0005),
@@ -46,55 +29,107 @@ leaflet(stations.df) %>%
   leaflet::setView(-76.4, lat = 38, zoom = 7) 
 
 ## ------------------------------------------------------------------------
-wq.s_chla <- wq.df %>% 
-  select(station, samplereplicatetype, sampledate, parameter, measurevalue) %>% 
-  filter(parameter == "s_chla") %>% 
-  distinct() %>% 
-  select(-samplereplicatetype) %>% 
-  group_by_at(vars(-measurevalue)) %>% 
-  summarize(measurevalue = mean(measurevalue, is.na = TRUE)) %>% 
-  ungroup()
+wq.df <- wq.raw %>% 
+  mutate(sampledate = as.Date(sampledate))
 
 ## ------------------------------------------------------------------------
-wq.sub.tf <- wq.df %>% 
-  filter(salzone == "f") %>% 
-  #filter(is.na(upperpycnocline)) %>% 
-  #filter(startsWith(station, "f")) %>% 
-  select(station, samplereplicatetype, sampledate, parameter, measurevalue) %>% 
-  filter(grepl("chla|pheo|doc", parameter)) %>% 
-  distinct() %>% 
-  mutate(parameter = case_when(
-    grepl("chla", parameter) ~ "chla",
-    grepl("pheo", parameter) ~ "pheo",
-    grepl("doc", parameter) ~ "doc",
-    TRUE ~ "ERROR"
-  )) %>% 
-  select(-samplereplicatetype) %>% 
-  group_by_at(vars(-measurevalue)) %>% 
-  summarize(measurevalue = mean(measurevalue)) %>% 
-  ungroup()
+wq.df <- wq.df %>% 
+  mutate(pycnocline = case_when(
+    is.na(upperpycnocline) ~ FALSE,
+    upperpycnocline == 0 ~ FALSE,
+    TRUE ~ TRUE
+  ))
 
 ## ------------------------------------------------------------------------
-wq.sub.pycno <- wq.df %>% 
-  filter(salzone != "f",
-    #!is.na(upperpycnocline),
-         grepl("ap_|s_", parameter)) %>% 
-  #filter(!startsWith(station, "f")) %>% 
-  select(station, samplereplicatetype, sampledate, parameter, measurevalue) %>% 
+issue.df <- wq.df %>% 
+  select(monitoringstation, sampledate,
+         pycnocline, upperpycnocline, lowerpycnocline) %>% 
   distinct() %>% 
-  mutate(parameter = case_when(
-    parameter %in% c("ap_chla", "s_chla") ~ "chla",
-    parameter %in% c("ap_pheo", "s_pheo") ~ "pheo",
-    parameter %in% c("ap_doc", "s_doc") ~ "doc",
-    TRUE ~ "ERROR"
-  )) %>% 
-  select(-samplereplicatetype) %>% 
-  group_by_at(vars(-measurevalue)) %>% 
-  summarize(measurevalue = mean(measurevalue)) %>% 
-  ungroup()
+  group_by(monitoringstation, sampledate) %>% 
+  mutate(count = n()) %>% 
+  ungroup() %>% 
+  filter(count == 2,
+         complete.cases(.)) %>% 
+  rename(up = upperpycnocline,
+         lp = lowerpycnocline) %>% 
+  select(-pycnocline)
+  
+
+wq.df <- left_join(wq.df, issue.df, by = c("monitoringstation", "sampledate")) %>% 
+  mutate(pycnocline = if_else(is.na(count), pycnocline, TRUE),
+         upperpycnocline = if_else(is.na(up), upperpycnocline, up),
+         lowerpycnocline = if_else(is.na(lp), lowerpycnocline, lp)
+         )
 
 ## ------------------------------------------------------------------------
-wq.sub <- bind_rows(wq.s_chla, wq.sub.tf, wq.sub.pycno) %>% 
+wq.df <- wq.df %>% 
+  select(station, source, sampledate, samplereplicatetype,
+         depth, layer, 
+         pycnocline, upperpycnocline, lowerpycnocline,
+         parameter, measurevalue) %>% 
+  distinct()
+
+## ------------------------------------------------------------------------
+wq.df <- wq.df %>% 
+  filter(layer == "s", 
+         parameter == "chla") %>% 
+  unite(parameter, c("layer", "parameter"), remove = FALSE) %>% 
+  bind_rows(wq.df)
+
+## ------------------------------------------------------------------------
+avg_wq <- function(x) {
+  final.df <- x %>% 
+    group_by_at(vars(-measurevalue, -samplereplicatetype)) %>% 
+    summarize(measurevalue = mean(measurevalue, na.rm = TRUE)) %>% 
+    group_by_at(vars(-measurevalue, -layer)) %>%
+    summarize(measurevalue = mean(measurevalue, na.rm = TRUE)) %>%
+    group_by_at(vars(-measurevalue, -depth)) %>% 
+    summarize(measurevalue = mean(measurevalue, na.rm = TRUE)) %>% 
+    ungroup()
+}
+
+## ---- eval=FALSE, echo=FALSE---------------------------------------------
+## # If the upper pycnocline depth is specified, then the mean for each parameter (i.e. salinity, chlorophyll a, pheophytin, DOC) is found using samples specified as above the pycnocline ("ap") and surface ("s") Buchanan et al. [-@BuchananPhytoplanktonreferencecommunities2005, p. 139]. If the upper pycnocline depth is not specified, then the mean for each parameter (i.e. salinity, chlorophyll a, pheophytin, DOC) is found using samples from the entire water column Buchanan et al. [-@BuchananPhytoplanktonreferencecommunities2005, p. 139]. Finally, join the two data frames back together to re-create `wq.df`.
+## pdepth.df <- events.df %>%
+##   mutate(sampledate = as.Date(sampledate)) %>%
+##   select(station, sampledate, pdepth) %>%
+##   dplyr::distinct()
+## 
+## wq.df <- left_join(wq.df, pdepth.df, by = c("station", "sampledate"))
+## abp.df <- wq.df %>%
+##   filter(pycnocline == TRUE,
+##          # source != "vims",
+##          depth <= upperpycnocline
+##          # depth <= pdepth
+##          ) %>%
+##   avg_wq()
+## 
+## vims.df <- wq.df %>%
+##   filter(pycnocline == TRUE,
+##          source == "vims",
+##          depth <= lowerpycnocline) %>%
+##   avg_wq()
+## 
+## wc.df <- wq.df %>%
+##   filter(pycnocline == FALSE) %>%
+##   avg_wq()
+## 
+## wq.df <- bind_rows(abp.df,
+##                    # vims.df,
+##                    wc.df) %>%
+##   rename(date = sampledate)
+
+## ------------------------------------------------------------------------
+pdepth.df <- events.df %>% 
+  filter(layer %in% c("ap", "wc")) %>% 
+  mutate(sampledate = as.Date(sampledate)) %>% 
+  select(station, sampledate, pdepth) %>% 
+  dplyr::distinct()
+
+wq.df <- left_join(wq.df, pdepth.df, by = c("station", "sampledate"))
+wq.df <- wq.df %>% 
+  filter(depth <= pdepth) %>% 
+  avg_wq() %>% 
   rename(date = sampledate)
 
 ## ------------------------------------------------------------------------
@@ -108,7 +143,7 @@ bay.sub <- bay.df %>%
 library(parallel)
 n.cores <- detectCores() - 1
 cl <- makeCluster(n.cores)
-clusterExport(cl = cl, varlist = c("wq.sub", "bay.sub"))
+clusterExport(cl = cl, varlist = c("wq.df", "bay.sub"))
 clusterEvalQ(cl, c(library(dplyr))) %>% invisible()
 
 ## ------------------------------------------------------------------------
@@ -116,7 +151,7 @@ env.df <- parLapply(cl, 1:nrow(bay.sub), function(row.i) {
 
   sub.df <- slice(bay.sub, row.i)
   #----------------------------------------------------------------------------
-  sub.env <- wq.sub %>% 
+  sub.env <- wq.df %>% 
     filter(station == sub.df$station,
            date >= sub.df$lower_date,
            date <= sub.df$upper_date)
@@ -164,5 +199,5 @@ env.wide <- env.wide %>%
 bay.df <- left_join(bay.df, env.wide, by = c("station", "sampledate"))
 
 ## ------------------------------------------------------------------------
-#rm(env.df, env.wide, wq.df, wq.sub, bay.sub)
+#rm(env.df, env.wide, wq.df, wq.df, bay.sub)
 

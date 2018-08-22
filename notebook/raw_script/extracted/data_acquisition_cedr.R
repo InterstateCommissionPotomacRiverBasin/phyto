@@ -1,26 +1,11 @@
----
-title: "Untitled"
-output: html_document
----
-
-```{r echo=FALSE}
+## ----echo=FALSE----------------------------------------------------------
 knitr::opts_chunk$set(eval=run.cedr.acquisition)
-```
 
-It is __NOT__ recommended that the following section of R-script be run with everytime this document is compiled. Running this script each time should not cause any errors but could lead to significant wait times associated with downloading the data from CEDR. The phytoplankton taxonomic counts and water quality data is relatively large and can take some time to download; therefore, this script should be run after your intial download from Git Hub, after a known update has been made, or after a signficant amount of time has passed from the intial data download (~6 months). 
-
-For those working with the __R Markdown__ file, the object `run.cedr.acquisition` is a hidden object specified at the head of the *pibi_notebook.Rmd* created to indicate if the user would like to download data from [CBP CEDR database](www.chespeakebay.net) (`run.cedr.acquisition <- TRUE`) or if user has already downloaded the data and wants to skip downloading the data again (`run.cedr.acquisition <- FALSE`). `run.cedr.acquisition` is then used in this section to signifiy if the code chunks should be executed or ignored using the `eval` option at the top of the code chunk; therefore, if `run.cedr.acquisition` is set to `TRUE`, then `eval=TRUE` and the code will be executed, and vice versa if`run.cedr.acquisition` is set to `FALSE`.  In the subsequent code chunks in this section, the CEDR data will be downloaded using the Chesapeake Bay Program CEDR API and the downloaded data will be saved into the R project directory. The data will be imported in subsequent sections.
-
-Create `url.root`, which represents the root of the CEDR API. All API calls will start with `url.root`. Additionally, use `Sys.Date()` to find todays date, which will be used in the API query. This makes the following script more dynamic because if this script is run in 2 years, it will then include any data that was added to the CEDR database within those 2 years.
-```{r}
+## ------------------------------------------------------------------------
 url.root <- "http://datahub.chesapeakebay.net/api.JSON"
 todays.date <- format(Sys.Date(), "%m-%d-%Y")
-```
 
-#### Download Station Vector
-
-Create a vector (`station.vec`) of stations that contain phytoplankton data. The vector will be used to query data from from the CEDR API in subsequent code chunks.
-```{r}
+## ------------------------------------------------------------------------
 station.vec <- file.path(url.root,
                        "LivingResources",
                        "TidalPlankton",
@@ -31,12 +16,8 @@ station.vec <- file.path(url.root,
                        "Station") %>% 
   fromJSON() %>% 
   pull(unique(MonitoringLocationId))
-```
 
-#### Download Phytoplankton Data
-
-Download all of the phytoplankton data from the CEDR API.
-```{r}
+## ------------------------------------------------------------------------
 phyto.df <- file.path(url.root,
                       "LivingResources",
                       "TidalPlankton",
@@ -48,18 +29,14 @@ phyto.df <- file.path(url.root,
                       paste(station.vec, collapse = ",")) %>%
   fromJSON() %>% 
   clean_up()
-```
 
-Subset `phyto.df` to only represent data collected from the above pycnocline layer or in the water column (`Layer %in% c("AP", "WC)`) and rows that contain taxonomic counts (`!is.na(ReportingValue)`). Also, convert `SampleDate` to class date, which will be used to limit the water quality download query [Download Water Quality Data].
-```{r}
+## ------------------------------------------------------------------------
 phyto.df <- phyto.df %>% 
   filter(layer %in% c("ap", "wc"),
          !is.na(reportingvalue)) %>% 
   mutate(sampledate = as.Date(sampledate))
-```
 
-Update TSNs (`org_tsn`) for reported taxa (`latinname`) known to be problematic. Most of these taxa are not in the ITIS database but an upstream taxonomic rank is found in ITIS. For example, the species, Navicula notablis, is not found in ITIS but the genus Navicula is present in ITIS; therefore, the TSN and hierarchy for Navicula is used to represent an incomplete hierarchy for Navicula notablis. For the purposes of this document, these incomplete hierarchies are good enough because the metrics calulated in the [Metric Calculation] section only requires taxonomic data for the ranks division, phylum, class, and two specific species. For future development of indices, these hierarchies will need to be completed either manually or find a more complete database (maybe Algaebase?).
-```{r}
+## ------------------------------------------------------------------------
 phyto.df <- phyto.df %>% 
   mutate(
     tsn = as.integer(tsn),
@@ -128,22 +105,15 @@ phyto.df <- phyto.df %>%
       TRUE ~ as.integer(tsn)
     )
   )
-```
 
-
-Export the phytoplankton taxonomic counts (`phyto.df`) as a CSV file to the "data" folder in this project directory. Using a combination of `dir.create()`, `file.path()`, and `project.dir`(created using `rprojroot::find_rstudio_root_file()` in [Getting Started]) the necessary folder structure in the project directory will be created, if it does not already exist.
-```{r}
+## ------------------------------------------------------------------------
 dir.create(file.path(project.dir, "data/phytoplankton"),
            recursive = TRUE, showWarnings = FALSE)
 phyto.df %>% 
   mutate(reportingvalue = as.character(reportingvalue)) %>% 
 data.table::fwrite(file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton", "cedr_phyto_taxa.csv"))
-```
 
-#### Download Monitoring Event
-
-Download all of the monitoring event data associated with the collection of phytoplankton from the CEDR API.
-```{r}
+## ------------------------------------------------------------------------
 event.df <- file.path(url.root,
                       "LivingResources",
                       "TidalPlankton",
@@ -155,20 +125,14 @@ event.df <- file.path(url.root,
                       paste(station.vec, collapse = ",")) %>%
   fromJSON() %>% 
   clean_up()
-```
 
-Export the phytoplankton event data (`event.df`) as a CSV file to "data" folder in this project directory. Using a combination of `dir.create()`, `file.path()`, and `rprojroot::find_rstudio_root_file()` the necessary folder structure in the project directory will be created, if it does not already exist.
-```{r}
+## ------------------------------------------------------------------------
 dir.create(file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton"),
            recursive = TRUE, showWarnings = FALSE)
 
 data.table::fwrite(event.df, file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton", "cedr_phyto_event.csv"))
-```
 
-#### Download Station Information
-
-Download all of the station data associated with the collection of phytoplankton from the CEDR API.
-```{r}
+## ------------------------------------------------------------------------
 station.df <- file.path(url.root,
                         "LivingResources",
                         "TidalPlankton",
@@ -177,20 +141,14 @@ station.df <- file.path(url.root,
                         paste(station.vec, collapse = ",")) %>%
   fromJSON() %>% 
   clean_up()
-```
 
-Export the phytoplankton station data (`station.df`) as a CSV file to "data" folder in this project directory. Using a combination of `dir.create()`, `file.path()`, and `rprojroot::find_rstudio_root_file()` the necessary folder structure in the project directory will be created, if it does not already exist.
-```{r}
+## ------------------------------------------------------------------------
 dir.create(file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton"),
            recursive = TRUE, showWarnings = FALSE)
 
 data.table::fwrite(station.df, file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton", "cedr_phyto_station.csv"))
-```
 
-#### Download Water Quality Data
-
-Download chlorophyll a, dissolved organic carbon, pheophytin, and salinity water quality data collected from the same stations as the phytoplankton data. The minimum and maximum dates found in the phytoplankton taxonomic count data (`phyto.df$SampleDate`) are used to limit the water quality query to reduce the amount of unwanted data and to speed up the download. Three days is subtracted from the minimum date and three days are added to the maximum date becuase water quality data collected within ± 3 day window (see [3-Day Window] for more details).
-```{r}
+## ------------------------------------------------------------------------
 wq.df <- file.path(url.root,
                    "WaterQuality",
                    "WaterQuality",
@@ -203,20 +161,13 @@ wq.df <- file.path(url.root,
                    "21,34,74,83") %>% 
   fromJSON() %>% 
   clean_up()
-```
 
-Export the water quality data (`wq.df`) as a CSV file to "data" folder in this project directory. Using a combination of `dir.create()`, `file.path()`, and `rprojroot::find_rstudio_root_file()` the necessary folder structure in the project directory will be created, if it does not already exist.
-```{r}
+## ------------------------------------------------------------------------
 dir.create(file.path(rprojroot::find_rstudio_root_file(), "data/water_quality"),
            recursive = TRUE, showWarnings = FALSE)
 
 data.table::fwrite(wq.df, file.path(rprojroot::find_rstudio_root_file(), "data/water_quality", "cedr_wq.csv"))
-```
 
-Remove data objects that are no longer useful to clean up the global environment.
-```{r}
+## ------------------------------------------------------------------------
 rm(run.cedr.acquisition, url.root, todays.date, station.vec, phyto.df, event.df, station.df, wq.df)
-```
-
-
 
