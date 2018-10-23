@@ -76,7 +76,7 @@ salzone.diff <- events.sub %>%
 salzone.diff
 ```
 
-To be consitent with the data used to develope the PIBI, salinity zones specified by Jacqueline M. Johnson (`old_salzone`) were favored when salinity zones differed. To be more explicit, `salzone` is replaced by `old_salzone` when salinity zones differed.
+To be consitent with the data used to develop the PIBI, salinity zones specified by Jacqueline M. Johnson (`old_salzone`) were favored when salinity zones differed. To be more explicit, `salzone` is replaced by `old_salzone` when salinity zones differed.
 ```{r}
 events.sub <- events.sub %>% 
   rename(cedr_salzone = salzone) %>% 
