@@ -130,7 +130,7 @@ Export the phytoplankton event data (`event.df`) as a CSV file to "data" folder 
 dir.create(file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton"),
            recursive = TRUE, showWarnings = FALSE)
 
-data.table::fwrite(event.df, file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton", "cedr_phyto_event.csv"))
+data.table::fwrite(event.df, file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton", "VA_ODU_phyto_event.csv"))
 ```
 
 #### Download Station Information
