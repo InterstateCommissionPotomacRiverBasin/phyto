@@ -9,6 +9,14 @@ output: html_document
 knitr::opts_chunk$set(eval=run.cedr.acquisition)
 ```
 
+```{r}
+project.dir <- rprojroot::find_rstudio_root_file()
+
+dir.create(file.path(project.dir, "data/phytoplankton2/"),
+           recursive = TRUE, showWarnings = TRUE)
+
+```
+
 
 Create `url.root`, which represents the root of the CEDR API. All API calls will start with `url.root`. Additionally, use `Sys.Date()` to find today's date, which will be used in the API query. This makes the following script more dynamic because if this script is run in 2 years, it will then include any data that was added to the CEDR database within those 2 years.
 ```{r}
@@ -108,11 +116,11 @@ phyto.df <- phyto.df %>%
 
 Export the phytoplankton taxonomic counts (`phyto.df`) as a CSV file to the "data" folder in this project directory. Using a combination of `dir.create()`, `file.path()`, and `project.dir`(created using `rprojroot::find_rstudio_root_file()` in [Getting Started]) the necessary folder structure in the project directory will be created, if it does not already exist.  Altered output file name for VA_ODU
 ```{r}
-dir.create(file.path(project.dir, "data/phytoplankton"),
-           recursive = TRUE, showWarnings = FALSE)
+dir.create(file.path(project.dir, "data/phytoplankton2/"),
+           recursive = TRUE, showWarnings = TRUE)
 phyto.df %>% 
   mutate(reportingvalue = as.character(reportingvalue)) %>% 
-data.table::fwrite(file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton", "VA_ODU_phyto_taxa.csv"))
+data.table::fwrite(file.path(project.dir, "data/phytoplankton2/", "VA_ODU_phyto_taxa.csv"))
 #"cedr_phyto_taxa.csv"
 ```
 
@@ -127,10 +135,12 @@ event.df <- clean_up(event.df)
 
 Export the phytoplankton event data (`event.df`) as a CSV file to "data" folder in this project directory. Using a combination of `dir.create()`, `file.path()`, and `rprojroot::find_rstudio_root_file()` the necessary folder structure in the project directory will be created, if it does not already exist.
 ```{r}
-dir.create(file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton"),
-           recursive = TRUE, showWarnings = FALSE)
+dir.create(file.path(project.dir,
+  #rprojroot::find_rstudio_root_file(), 
+  "data/phytoplankton2/"),
+           recursive = TRUE, showWarnings = TRUE)
 
-data.table::fwrite(event.df, file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton", "VA_ODU_phyto_event.csv"))
+data.table::fwrite(event.df, file.path(project.dir, "data/phytoplankton2/", "VA_ODU_phyto_event.csv"))
 ```
 
 #### Download Station Information
@@ -149,10 +159,10 @@ station.df <- file.path(url.root,
 
 Export the phytoplankton station data (`station.df`) as a CSV file to "data" folder in this project directory. Using a combination of `dir.create()`, `file.path()`, and `rprojroot::find_rstudio_root_file()` the necessary folder structure in the project directory will be created, if it does not already exist.
 ```{r}
-dir.create(file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton"),
-           recursive = TRUE, showWarnings = FALSE)
+dir.create(file.path(project.dir, "data/phytoplankton"),
+           recursive = TRUE, showWarnings = TRUE)
 
-data.table::fwrite(station.df, file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton", "cedr_phyto_station.csv"))
+data.table::fwrite(station.df, file.path(project.dir, "data/phytoplankton", "cedr_phyto_station.csv"))
 ```
 
 #### Download Water Quality Data
@@ -175,10 +185,10 @@ wq.df <- file.path(url.root,
 
 Export the water quality data (`wq.df`) as a CSV file to "data" folder in this project directory. Using a combination of `dir.create()`, `file.path()`, and `rprojroot::find_rstudio_root_file()` the necessary folder structure in the project directory will be created, if it does not already exist.
 ```{r}
-dir.create(file.path(rprojroot::find_rstudio_root_file(), "data/water_quality"),
-           recursive = TRUE, showWarnings = FALSE)
+dir.create(file.path(project.dir, "data/water_quality"),
+           recursive = TRUE, showWarnings = TRUE)
 
-data.table::fwrite(wq.df, file.path(rprojroot::find_rstudio_root_file(), "data/water_quality", "cedr_wq.csv"))
+data.table::fwrite(wq.df, file.path(project.dir, "data/water_quality", "cedr_wq.csv"))
 ```
 
 Remove data objects that are no longer useful to clean up the global environment.
