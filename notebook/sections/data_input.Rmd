@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r echo=FALSE}
-knitr::opts_chunk$set(eval=run.cedr.acquisition)
+knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 ```
 
 ```{r}
@@ -24,6 +24,22 @@ url.root <- "http://datahub.chesapeakebay.net/api.JSON"
 todays.date <- format(Sys.Date(), "%m-%d-%Y")
 ```
 
+
+#### Download Station Vector
+
+Create a vector (`station.vec`) of stations that contain phytoplankton data. The vector will be used to query data from from the CEDR API in subsequent code chunks.
+```{r}
+station.vec <- file.path(url.root,
+                       "LivingResources",
+                       "TidalPlankton",
+                       "Reported",
+                       "1-01-1970",
+                       todays.date,
+                       "17",
+                       "Station") %>% 
+  fromJSON() %>% 
+  pull(unique(MonitoringLocationId))
+```
 
 This is an attempt to replace the CEDR information download with data from the most recent VA excel sheet provided by Mike Malonee:
 ```{r}
