@@ -54,35 +54,53 @@ run.itis.acquisition <- FALSE
 
 ```
 
-## Prepare Event Data
-```{r child = 'sections/prep_events.Rmd', eval=TRUE}
+##Prepare Event Data Test
+```{r child = 'sections/prep_events_test.Rmd', eval=TRUE}
 
 ```
+
+<!-- ## Prepare Event Data -->
+<!-- ```{r child = 'sections/prep_events.Rmd', eval=TRUE} -->
+
+<!-- ``` -->
 
 ## Prepare Water Quality Data
 ```{r child = 'sections/prep_wq.Rmd', eval=TRUE}
 
 ```
 
-## Metric Calculation
-```{r child = 'sections/metric_calc.Rmd', eval=TRUE}
+
+## Metric Calculation test version(to work with info output)
+```{r child = 'sections/metric_calc_test.Rmd', eval=TRUE}
 
 ```
 
-## Score and Rate Metrics
-```{r child = 'sections/scores_ratings.Rmd', eval=TRUE}
+
+<!-- ## Metric Calculation -->
+<!-- ```{r child = 'sections/metric_calc.Rmd', eval=TRUE} -->
+
+<!-- ``` -->
+
+
+## Info Output
+```{r child = 'sections/info_output.Rmd', eval=TRUE}
 
 ```
 
-### Rating Exploration
-```{r child = 'sections/map_ratings.Rmd', eval=TRUE}
+<!-- ## Score and Rate Metrics -->
+<!-- ```{r child = 'sections/scores_ratings.Rmd', eval=TRUE} -->
 
-```
+<!-- ``` -->
 
-## Appendix A: Score Comparisons
+<!-- ### Rating Exploration -->
+<!-- ```{r child = 'sections/map_ratings.Rmd', eval=TRUE} -->
 
-```{r child = 'sections/appendix_a_master.Rmd', eval=TRUE}
+<!-- ``` -->
 
-```
+<!-- ## Appendix A: Score Comparisons -->
+
+<!-- ```{r child = 'sections/appendix_a_master.Rmd', eval=TRUE} -->
+
+<!-- ``` -->
 
 ## Citations

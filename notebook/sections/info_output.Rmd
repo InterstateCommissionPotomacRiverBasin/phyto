@@ -1,0 +1,37 @@
+---
+title: "info_output_for_user"
+author: "Luke Vawter"
+date: "November 5, 2018"
+output: html_document
+---
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
+```
+
+This section was created as a means of trouble shooting an issue with the scores_rating section.  It is is meant to be included in pibi_notebook in place of scores_rating.
+
+```{r}
+
+  metric.vec <- c("total_phyto_biomass_chla_ratio",
+                  "surface_chla",
+                  "cyanophyte_biomass",
+                  "doc",
+                  "pheophytin",
+                  "total_phyto_biomass")
+
+```
+
+```{r}
+  metrics.sub <- metrics.long %>% 
+    filter(season == "spring", 
+           salzone == "f",
+           metric %in% metric.vec)
+```
+
+
+```{r}
+print(metric.vec)
+print(metrics.sub)
+```
+
