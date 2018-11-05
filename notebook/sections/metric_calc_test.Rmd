@@ -46,12 +46,12 @@ bay.has_class <- bay.df %>%
   filter(is.na(class))
 ```
 
-```{r}
-print(bay.has_species)
-print(bay.maxa)
-print(bay.df)
-print(bay.taxa)
-```
+# ```{r}
+# print(bay.has_species)
+# print(bay.maxa)
+# print(bay.df)
+# print(bay.taxa)
+# ```
 
 
 
@@ -110,9 +110,9 @@ metrics.df <- bay.taxa %>%
 ```
 
 A test to see the content of metrics.df:
-```{r}
-print(metrics.df)
-```
+# ```{r}
+# print(metrics.df)
+# ```
 
 
 `metrics.df` is converted to a long data format, which will make it easier to score the metrics in the following section.

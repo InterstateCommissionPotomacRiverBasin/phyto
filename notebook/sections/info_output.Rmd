@@ -30,8 +30,8 @@ This section was created as a means of trouble shooting an issue with the scores
 ```
 
 
-```{r}
-print(metric.vec)
-print(metrics.sub)
-```
+# ```{r}
+# print(metric.vec)
+# print(metrics.sub)
+# ```
 

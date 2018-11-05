@@ -21,20 +21,21 @@ events.df <- data.table::fread(file.path(project.dir, "data/phytoplankton2/VA_OD
                             na.strings = "")
 ```
 
-change sample_date to date format(this may not be what you want to do, check back in on this tomorrow when you are less tired):
-```{r}
-events.df %>%
-mutate(sample_date = as.Date(sample_date)) 
-```
 
-```{r}
-events.has_sal <- events.df %>%
-  filter(is.na(salzone)) %>% 
-  print()
-```
+# ```{r}
+# events.has_sal <- events.df %>%
+#   filter(is.na(salzone)) %>% 
+#   print()
+# ```
 
 
 Some of the salinity zones (`salzone`) differ from the categories in [@LacouturePhytoplanktonindexbiotic2006]. Salinity zones are converted to one of four categories: "f" (freshwater), "m" (mesohaline), "o" (oligohaline), and "p" (polyhaline).
+
+
+```{r}
+events.df <- events.df %>% 
+  mutate(sampledate = as.Date(sampledate)) 
+```
 
 # ```{r}
 # events.df <- events.df %>% 
@@ -48,11 +49,11 @@ Some of the salinity zones (`salzone`) differ from the categories in [@Lacouture
 #          ))
 # ```
 
-```{r}
-events.has_sal <- events.df %>%
-  filter(is.na(salzone)) %>% 
-  print()
-```
+# ```{r}
+# events.has_sal <- events.df %>%
+#   filter(is.na(salzone)) %>% 
+#   print()
+# ```
 Retain only unique information regarding the data provider (`source`), station name (`station`), sample date (`sampledate`), water layer (`layer`), and salinity zone (`salzone`).
 ```{r}
 events.sub <- events.df %>% 
@@ -60,11 +61,11 @@ events.sub <- events.df %>%
   distinct()
 ```
 
-```{r}
-events.sub.has_sal <- events.sub %>%
-  filter(is.na(salzone)) %>% 
-  print()
-```
+# ```{r}
+# events.sub.has_sal <- events.sub %>%
+#   filter(is.na(salzone)) %>% 
+#   print()
+# ```
 Import the salinity zone used by Jacqueline M. Johnson of the Chesapeake Bay Program. This will provide a check of salinity zone classification from 10 years ago to the salinity zone classification in CEDR.
 
 ```{r}
