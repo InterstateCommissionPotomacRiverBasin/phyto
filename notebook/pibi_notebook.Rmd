@@ -82,10 +82,10 @@ run.itis.acquisition <- FALSE
 <!-- ``` -->
 
 
-## Info Output
-```{r child = 'sections/info_output.Rmd', eval=TRUE}
+<!-- ## Info Output -->
+<!-- ```{r child = 'sections/info_output.Rmd', eval=TRUE} -->
 
-```
+<!-- ``` -->
 
 <!-- ## Score and Rate Metrics -->
 <!-- ```{r child = 'sections/scores_ratings.Rmd', eval=TRUE} -->

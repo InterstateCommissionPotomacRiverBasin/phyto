@@ -25,13 +25,18 @@ cache.me <- FALSE
 extracted.path <- c("notebook/raw_script/extracted")
 source.vec <- c(
 "intro.R",
+"data_input.R",
+"data_acquisition_itis.R",
 "prep_hierarchy.R",
 "prep_carbon.R",
-"prep_events.R",
+#"prep_events.R",
+"prep_events_test.R",
 # "prep_station.R",
- "prep_wq.R"#,
+ "prep_wq.R",
 # "metric_calc.R",
-# "scores_ratings.R",
+ "metric_calc_test.R",
+ "scores_ratings.R",
+ "info_output.R"
 # "map_ratings.R",
 # "validation_old_values.R",
 # "validation_scoring_disagreement.R",
@@ -41,3 +46,5 @@ source.vec <- c(
 purrr::map(source.vec, function(source.i) {
 source(file.path(extracted.path, source.i))
 })
+
+print("DONE")

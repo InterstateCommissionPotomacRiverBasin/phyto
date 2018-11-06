@@ -1,18 +1,7 @@
----
-title: "metric_calc_test"
-author: "Luke Vawter"
-date: "November 5, 2018"
-output: html_document
----
-
-```{r echo=FALSE}
+## ----echo=FALSE----------------------------------------------------------
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
-```
 
-this is a modified version of metric_calc created for testing purposes. DO NOT USE THIS SECTION if you are running actual data through the pipeline. Use metric_calc instead (change in pibi_notebook)
-
-Subset `bay.df` to just represent the columns necessary for metric calculations. Samples without specified salinity zones (`salzone`) are excluded.
-```{r}
+## ------------------------------------------------------------------------
 bay.taxa <- bay.df %>% 
   select(unique_id, sampledate, season,  salzone,
          surface_chla, chla, pheophytin, doc,
@@ -21,11 +10,8 @@ bay.taxa <- bay.df %>%
   filter(!is.na(salzone)) %>% 
   distinct() %>% 
   mutate(biomass = if_else(is.na(biomass), 0, biomass))
-```
 
-The majority of the metrics are calculated using the Multi-Metric Index R-package I am developing, `mmir`. `mmir` is installed and loaded in the Introduction. All of the metrics are calculated for each unique sampling event (`unique_id`), even though not every phytoplankton index uses the same metrics. This is done to simplify the process and the filter of metrics to calculate the IBI scores is done during the scoring section.
-
-```{r}
+## ------------------------------------------------------------------------
 bay.maxa <- bay.df %>% 
   select(salzone,
 
@@ -34,28 +20,16 @@ bay.maxa <- bay.df %>%
 bay.has_species <- bay.df %>%
   filter(is.na(species))
 
-```
 
-
-```{r}
+## ------------------------------------------------------------------------
 
 bay.has_sal <- bay.df %>%
   filter(is.na(salzone))
 
 bay.has_class <- bay.df %>%
   filter(is.na(class))
-```
 
-<!-- # ```{r} -->
-<!-- # print(bay.has_species) -->
-<!-- # print(bay.maxa) -->
-<!-- # print(bay.df) -->
-<!-- # print(bay.taxa) -->
-<!-- # ``` -->
-
-
-
-```{r}
+## ------------------------------------------------------------------------
 metrics.df <- bay.taxa %>%
   select(unique_id, salzone, surface_chla, chla, doc, pheophytin) %>%
   distinct() %>%
@@ -107,17 +81,8 @@ metrics.df <- bay.taxa %>%
     )
   ) %>%
   select(-scrippsiella_precaria_biomass)
-```
 
-<!-- A test to see the content of metrics.df: -->
-<!-- # ```{r} -->
-<!-- # print(metrics.df) -->
-<!-- # ``` -->
-
-
-`metrics.df` is converted to a long data format, which will make it easier to score the metrics in the following section.
-```{r}
+## ------------------------------------------------------------------------
 metrics.long <- metrics.df %>% 
   gather(metric, value, surface_chla:prorocentrum_minimum_abundance)
-```
 

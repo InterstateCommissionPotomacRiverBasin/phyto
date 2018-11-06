@@ -1,43 +1,17 @@
----
-title: "prep_events_test"
-author: "Luke Vawter"
-date: "November 5, 2018"
-output: html_document
----
-
-```{r echo=FALSE}
+## ----echo=FALSE----------------------------------------------------------
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
-```
 
-
-this is a modified version of prep_events created for testing purposes. DO NOT USE THIS SECTION if you are running actual data through the pipeline. Use prep_events instead (change in pibi_notebook)
-
-
-Phytoplankton sampling event data obtained from CEDR ([Download Monitoring Event]) is imported.
-```{r}
+## ------------------------------------------------------------------------
 events.df <- data.table::fread(file.path(project.dir, "data/phytoplankton2/VA_ODU_phyto_event.csv"#cedr_phyto_event.csv"
                                          ),
                             data.table = FALSE,
                             na.strings = "")
-```
 
-
-<!-- # ```{r} -->
-<!-- # events.has_sal <- events.df %>% -->
-<!-- #   filter(is.na(salzone)) %>%  -->
-<!-- #   print() -->
-<!-- # ``` -->
-
-
-Some of the salinity zones (`salzone`) differ from the categories in [@LacouturePhytoplanktonindexbiotic2006]. Salinity zones are converted to one of four categories: "f" (freshwater), "m" (mesohaline), "o" (oligohaline), and "p" (polyhaline).
-
-
-```{r}
+## ------------------------------------------------------------------------
 events.df <- events.df %>% 
   mutate(sampledate = as.Date(sampledate)) 
-```
 
-```{r}
+## ------------------------------------------------------------------------
 events.df <- events.df %>%
   mutate(sampledate = as.Date(sampledate),
          salzone = case_when(
@@ -47,30 +21,23 @@ events.df <- events.df %>%
            salzone %in% c("p", "pe") ~ "p",
            TRUE ~ as.character(NA)
          ))
-```
 
-```{r}
+## ------------------------------------------------------------------------
 events.has_sal <- events.df %>%
   filter(is.na(salzone)) %>%
   print()
-```
 
-Retain only unique information regarding the data provider (`source`), station name (`station`), sample date (`sampledate`), water layer (`layer`), and salinity zone (`salzone`).
-```{r}
+## ------------------------------------------------------------------------
 events.sub <- events.df %>% 
   select(source, station, sampledate, layer, salzone) %>% 
   distinct()
-```
 
-```{r}
+## ------------------------------------------------------------------------
 events.sub.has_sal <- events.sub %>%
   filter(is.na(salzone)) %>%
   print()
-```
 
-Import the salinity zone used by Jacqueline M. Johnson of the Chesapeake Bay Program. This will provide a check of salinity zone classification from 10 years ago to the salinity zone classification in CEDR.
-
-```{r}
+## ------------------------------------------------------------------------
 old.salzone <- readxl::read_excel(file.path(project.dir, "data/jackie_data/JMJ_PIBI_Salzone_Data.xlsx"),
                          sheet = "JMJ Salzone+Scores") %>% 
   clean_up() %>% 
@@ -79,21 +46,15 @@ old.salzone <- readxl::read_excel(file.path(project.dir, "data/jackie_data/JMJ_P
   rename(old_salzone = ibi_salzone,
          sampledate = sample_date) %>% 
   distinct()
-```
 
-Append the salinity zone defined by Jacqueline M. Johnson (`old_salzone`) to `wq.df`.
-```{r}
+## ------------------------------------------------------------------------
 events.sub <- inner_join(events.sub, old.salzone, by = c("station", "sampledate"))
-```
 
-Identify rows where the salinity zone specified by CEDR (`salzone`) differs from the salinity zone specified by Jacqueline M. Johnson (`old_salzone`).
-```{r}
+## ------------------------------------------------------------------------
 events.sub <- events.sub %>% 
   mutate(salzone_disagree = if_else(salzone != old_salzone, TRUE, FALSE))
-```
 
-Summarize and plot the differences in specified salinity zones.
-```{r}
+## ------------------------------------------------------------------------
 salzone.diff <- events.sub %>% 
   select(station, sampledate, source, salzone, old_salzone, salzone_disagree) %>% 
   unite(sal_group, salzone, old_salzone) %>% 
@@ -110,18 +71,14 @@ salzone.diff <- events.sub %>%
   xlab("Salinity Zone Disagreement") +
   ylab("Number of Disagreements")
 salzone.diff
-```
 
-To be consitent with the data used to develop the PIBI, salinity zones specified by Jacqueline M. Johnson (`old_salzone`) were favored when salinity zones differed. To be more explicit, `salzone` is replaced by `old_salzone` when salinity zones differed.
-```{r}
+## ------------------------------------------------------------------------
 events.sub <- events.sub %>% 
   rename(cedr_salzone = salzone) %>% 
   mutate(salzone = if_else(salzone_disagree == TRUE, old_salzone, cedr_salzone))
-```
 
-Join `bay.df` and `events.sub` to combine phytoplankton count data with event data.
-```{r}
+## ------------------------------------------------------------------------
 bay.df <- left_join(bay.df, events.sub, by = c("source", "station",
                                                "sampledate", "layer")) %>% 
   mutate(unique_id = paste(unique_id, season, salzone, sep = "_"))
-```
+

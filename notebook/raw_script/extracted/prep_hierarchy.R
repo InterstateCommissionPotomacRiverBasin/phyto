@@ -6,7 +6,8 @@ col.class.vec <- c("samplenumber" = "character",
                    "tsn" = "character",
                    "speccode" = "character")
 
-taxa.raw <- data.table::fread(file.path(project.dir, "data/phytoplankton/cedr_phyto_taxa.csv"),
+taxa.raw <- data.table::fread(file.path(project.dir, "data/phytoplankton2/VA_ODU_phyto_taxa.csv"#cedr_phyto_taxa.csv"
+                                        ),
                             data.table = FALSE,
                             colClasses = col.class.vec,
                             na.strings = "") %>% 

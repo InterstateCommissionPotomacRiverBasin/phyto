@@ -5,7 +5,8 @@ knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 wq.raw <- data.table::fread(file.path(project.dir, "data/water_quality/cedr_wq.csv"),
                             data.table = FALSE,
                            na.strings = c("")) %>% 
-  filter(is.na(problem))
+  filter(is.na(problem),
+         parameter %in% c("chla", "doc", "pheo"))
 
 ## ------------------------------------------------------------------------
 stations.df <- wq.raw %>% 
