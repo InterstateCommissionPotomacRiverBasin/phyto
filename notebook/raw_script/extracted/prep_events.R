@@ -2,7 +2,8 @@
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 
 ## ------------------------------------------------------------------------
-events.df <- data.table::fread(file.path(project.dir, "data/phytoplankton/cedr_phyto_event.csv"),
+events.df <- data.table::fread(file.path(project.dir, "data/phytoplankton2/VA_ODU_phyto_event.csv"#cedr_phyto_event.csv"
+                                         ),
                             data.table = FALSE,
                             na.strings = "")
 

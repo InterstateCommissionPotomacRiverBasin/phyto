@@ -23,19 +23,15 @@ events.df <- events.df %>%
          ))
 
 ## ------------------------------------------------------------------------
-events.has_sal <- events.df %>%
-  filter(is.na(salzone)) %>%
-  print()
-
-## ------------------------------------------------------------------------
 events.sub <- events.df %>% 
   select(source, station, sampledate, layer, salzone) %>% 
   distinct()
 
 ## ------------------------------------------------------------------------
-events.sub.has_sal <- events.sub %>%
-  filter(is.na(salzone)) %>%
-  print()
+events.sub %>%
+  select(salzone) %>%
+  head()
+
 
 ## ------------------------------------------------------------------------
 old.salzone <- readxl::read_excel(file.path(project.dir, "data/jackie_data/JMJ_PIBI_Salzone_Data.xlsx"),
@@ -48,37 +44,13 @@ old.salzone <- readxl::read_excel(file.path(project.dir, "data/jackie_data/JMJ_P
   distinct()
 
 ## ------------------------------------------------------------------------
-events.sub <- inner_join(events.sub, old.salzone, by = c("station", "sampledate"))
-
-## ------------------------------------------------------------------------
-events.sub <- events.sub %>% 
-  mutate(salzone_disagree = if_else(salzone != old_salzone, TRUE, FALSE))
-
-## ------------------------------------------------------------------------
-salzone.diff <- events.sub %>% 
-  select(station, sampledate, source, salzone, old_salzone, salzone_disagree) %>% 
-  unite(sal_group, salzone, old_salzone) %>% 
-  distinct() %>% 
-  filter(salzone_disagree == TRUE) %>% 
-  group_by(sal_group) %>% 
-  summarize(count = n()) %>% 
-  ungroup() %>% 
-  arrange(count) %>% 
-  mutate(sal_group = factor(sal_group, levels = unique(sal_group))) %>% 
-  ggplot(aes(sal_group, count, fill = count)) + 
-  scale_fill_gradient(low = "lightblue", high = "darkblue") +
-  geom_bar(stat = "identity") +
-  xlab("Salinity Zone Disagreement") +
-  ylab("Number of Disagreements")
-salzone.diff
-
-## ------------------------------------------------------------------------
-events.sub <- events.sub %>% 
-  rename(cedr_salzone = salzone) %>% 
-  mutate(salzone = if_else(salzone_disagree == TRUE, old_salzone, cedr_salzone))
-
-## ------------------------------------------------------------------------
 bay.df <- left_join(bay.df, events.sub, by = c("source", "station",
                                                "sampledate", "layer")) %>% 
   mutate(unique_id = paste(unique_id, season, salzone, sep = "_"))
+
+## ------------------------------------------------------------------------
+events.sub %>%
+  select(salzone) %>%
+  head()
+
 
