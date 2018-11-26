@@ -180,6 +180,13 @@ wq.df <- wq.df %>%
   rename(date = sampledate)
 ```
 
+```{r}
+#added by Luke
+pdepth.df %>%
+  names()
+```
+
+
 ## 3-Day Window
 
 In some case the water quality data was not collected on the same day as the phytoplankton data. To obtain more phytoplankton sampling events with associated water quality data, [@LacouturePhytoplanktonindexbiotic2006] used water quality data collected within ± 3 days of the phytoplankton.
@@ -256,6 +263,15 @@ env.wide <- env.wide %>%
     ) %>% 
   select(station, sampledate, surface_chla, chla, pheophytin, doc)
 ```
+
+
+```{r}
+#added by Luke
+env.wide %>%
+  select(surface_chla) %>%
+  head()
+```
+
 
 Join `bay.df` with `env.wide` to combine phytoplankton count data with water quality data.
 ```{r}
