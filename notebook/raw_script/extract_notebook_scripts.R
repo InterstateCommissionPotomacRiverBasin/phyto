@@ -20,6 +20,7 @@ extract_code(appendix.path, extracted.path)
 
 
 # Run ---------------------------------------------------------------------
+run.itis.acquisition <- FALSE
 evaluate <- TRUE
 cache.me <- FALSE
 extracted.path <- c("notebook/raw_script/extracted")
@@ -34,8 +35,9 @@ source.vec <- c(
 # "prep_station.R",
  "prep_wq.R",
 # "metric_calc.R",
- "metric_calc_test.R"#,
+ "metric_calc_test.R",
  #"scores_ratings.R",
+ "scores_ratings_test.R"
  #"info_output.R"
 # "map_ratings.R",
 # "validation_old_values.R",

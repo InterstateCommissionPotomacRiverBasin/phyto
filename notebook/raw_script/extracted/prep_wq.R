@@ -134,6 +134,11 @@ wq.df <- wq.df %>%
   rename(date = sampledate)
 
 ## ------------------------------------------------------------------------
+#added by Luke
+pdepth.df %>%
+  names()
+
+## ------------------------------------------------------------------------
 bay.sub <- bay.df %>% 
   select(station, sampledate) %>% 
   distinct() %>% 
@@ -195,6 +200,12 @@ env.wide <- env.wide %>%
     doc = if_else(!is.na(doc), doc, as.numeric(NA))
     ) %>% 
   select(station, sampledate, surface_chla, chla, pheophytin, doc)
+
+## ------------------------------------------------------------------------
+#added by Luke
+env.wide %>%
+  select(surface_chla) %>%
+  head()
 
 ## ------------------------------------------------------------------------
 bay.df <- left_join(bay.df, env.wide, by = c("station", "sampledate"))
