@@ -10,7 +10,7 @@ knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 ```
 
 
-this is a modified version of prep_events created for testing purposes. DO NOT USE THIS SECTION if you are running actual data through the pipeline. Use prep_events instead (change in pibi_notebook)
+this is a modified version of prep_events created for use with VA_ODU data. DO NOT USE THIS SECTION if you are pulling data from CEDR.  Use the master branch of phyto2 which uses prep_events instead.
 
 
 Phytoplankton sampling event data obtained from CEDR ([Download Monitoring Event]) is imported.

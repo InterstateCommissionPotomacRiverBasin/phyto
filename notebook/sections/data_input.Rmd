@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 ```
 
+this is a modified version of data_aquisition created for use with VA_ODU data. DO NOT USE THIS SECTION if you are pulling data from CEDR.  Use the master branch of phyto2 which uses  data_aquisition instead.
+
 ```{r}
 project.dir <- rprojroot::find_rstudio_root_file()
 

@@ -15,7 +15,7 @@ output: html_document
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 ```
 
-this is a modified version of scores_ratings created for testing purposes. DO NOT USE THIS SECTION if you are running actual data through the pipeline. Use scores_ratings instead (change in pibi_notebook)
+this is a modified version of scores_ratings created for use with VA_ODU data. DO NOT USE THIS SECTION if you are pulling data from CEDR.  Use the master branch of phyto2 which uses scores_ratings instead.
 
 #### Spring Mesohaline
 ```{r}

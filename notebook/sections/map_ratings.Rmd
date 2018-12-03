@@ -6,6 +6,8 @@ output: html_document
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 ```
 
+Note from Luke: I have not made any changes to this section(or beyond this point) other than to add this note.  
+
 Summarize `ratings.df` to just represent IBI scores and ratings. Join `ratings.df` with `stations.df` to provide latitude and longitude data for interactive maps. `jitter()` is used to alter the points position slightly, to prevent event data for the same station from completely overlapping one another.
 ```{r}
 ibi.df <- ratings.df %>% 
