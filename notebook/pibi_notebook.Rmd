@@ -87,15 +87,20 @@ run.itis.acquisition <- FALSE
 
 <!-- ``` -->
 
+## Scores Ratings test version
+```{r child= 'sections/scores_ratings_test.Rmd', eval=TRUE}
+
+```
+
 <!-- ## Score and Rate Metrics -->
 <!-- ```{r child = 'sections/scores_ratings.Rmd', eval=TRUE} -->
 
 <!-- ``` -->
 
-<!-- ### Rating Exploration -->
-<!-- ```{r child = 'sections/map_ratings.Rmd', eval=TRUE} -->
+### Rating Exploration
+```{r child = 'sections/map_ratings.Rmd', eval=TRUE}
 
-<!-- ``` -->
+```
 
 <!-- ## Appendix A: Score Comparisons -->
 
