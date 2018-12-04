@@ -109,9 +109,3 @@ bay.df <- left_join(bay.df, partial.match.df, by = c("latinname", "size")) %>%
 bay.df <- left_join(bay.df, carbon.df, by = c("latinname", "size")) %>% 
   mutate(biomass = reportingvalue * carbon / 10 ^ 6)
 
-## ------------------------------------------------------------------------
-#added by Luke
-bay.df %>% 
-  select(biomass)%>%
-  head()
-

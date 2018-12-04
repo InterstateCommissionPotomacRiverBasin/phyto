@@ -3,9 +3,13 @@ title: "Prepare Carbon Assignments"
 output: html_document
 ---
 
+
+
 ```{r echo=FALSE}
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 ```
+
+L.V: no changes to this section
 
 A large but incomplete table of taxa size and carbon values is imported from the project data directory. This table, developed by [Jacqueline M. Johnson 2008](https://www.potomacriver.org/wp-content/uploads/2018/08/CBP-PhytoBiomassCalc_Johnson2008.pdf), contains sizes (biovolume in cubic micron) and carbon values (picogram carbon per cell) specific to the Chesapeake Bay for the 1984-2008 period.
 ```{r}
@@ -133,12 +137,7 @@ bay.df <- left_join(bay.df, carbon.df, by = c("latinname", "size")) %>%
   mutate(biomass = reportingvalue * carbon / 10 ^ 6)
 ```
 
-```{r}
-#added by Luke
-bay.df %>% 
-  select(biomass)%>%
-  head()
-```
+
 
 
 

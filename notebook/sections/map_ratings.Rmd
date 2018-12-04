@@ -6,8 +6,6 @@ output: html_document
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 ```
 
-Note from Luke: I have not made any changes to this section(or beyond this point) other than to add this note.  
-
 Summarize `ratings.df` to just represent IBI scores and ratings. Join `ratings.df` with `stations.df` to provide latitude and longitude data for interactive maps. `jitter()` is used to alter the points position slightly, to prevent event data for the same station from completely overlapping one another.
 ```{r}
 ibi.df <- ratings.df %>% 
@@ -18,6 +16,15 @@ ibi.df <- ratings.df %>%
   mutate(longitude = jitter(longitude, amount = 0.01),
          latitude = jitter(latitude, amount = 0.01))
 ```
+
+The following code was added to output ibi scores to a cvs format:
+```{r}
+dir.create(file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton2"),
+           recursive = TRUE, showWarnings = TRUE)
+
+data.table::fwrite(ibi.df, file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton2", "ibi_ratings.csv"))
+```
+
 
 Convert the `rating` column to factors, which will make it easier to assign colors to the ratings in subsequent plots.
 ```{r}

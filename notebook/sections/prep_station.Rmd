@@ -6,6 +6,9 @@ output: html_document
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 ```
 
+L.V: no changes to this section
+
+
 Identify any stations in `events.df` that are not found in `bay.df`.
 ```{r}
 missing.taxa <- anti_join(events.df, bay.df, by = "station")

@@ -28,12 +28,6 @@ events.sub <- events.df %>%
   distinct()
 
 ## ------------------------------------------------------------------------
-events.sub %>%
-  select(salzone) %>%
-  head()
-
-
-## ------------------------------------------------------------------------
 old.salzone <- readxl::read_excel(file.path(project.dir, "data/jackie_data/JMJ_PIBI_Salzone_Data.xlsx"),
                          sheet = "JMJ Salzone+Scores") %>% 
   clean_up() %>% 
@@ -47,10 +41,4 @@ old.salzone <- readxl::read_excel(file.path(project.dir, "data/jackie_data/JMJ_P
 bay.df <- left_join(bay.df, events.sub, by = c("source", "station",
                                                "sampledate", "layer")) %>% 
   mutate(unique_id = paste(unique_id, season, salzone, sep = "_"))
-
-## ------------------------------------------------------------------------
-events.sub %>%
-  select(salzone) %>%
-  head()
-
 

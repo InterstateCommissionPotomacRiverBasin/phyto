@@ -30,7 +30,10 @@ phyto.df <- readxl::read_excel(file.path(project.dir, "data/Va_phyto_count_and_e
 phyto.df <- clean_up(phyto.df)
 
 ## ------------------------------------------------------------------------
-test_phyto.df <- phyto.df %>%
-  filter(station %in% c("cb6.4"))
-    #"tf5.#", "tf4.#", "tf3.#", "ret5.#", "ret4.#", "ret3.#"))
+test_station_tf.df <- phyto.df %>%
+  filter(str_detect(station, "tf"))
+
+test_station_ret.df <- phyto.df %>%
+  filter(str_detect(station, "ret"))
+
 

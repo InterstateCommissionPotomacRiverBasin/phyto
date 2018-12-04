@@ -10,10 +10,9 @@ knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 ```
 
 
-this is a modified version of prep_events created for use with VA_ODU data. DO NOT USE THIS SECTION if you are pulling data from CEDR.  Use the master branch of phyto2 which uses prep_events instead.
+L.V.: this is a modified version of prep_events created for use with VA_ODU data. DO NOT USE THIS SECTION if you are pulling data from CEDR.  Use the master branch of phyto2 which uses prep_events instead.
 
-
-Phytoplankton sampling event data obtained from CEDR ([Download Monitoring Event]) is imported.
+Phytoplankton sampling event data obtained from VA ODU ([Download Monitoring Event]) is imported.
 ```{r}
 events.df <- data.table::fread(file.path(project.dir, "data/phytoplankton2/VA_ODU_phyto_event.csv"#cedr_phyto_event.csv"
                                          ),
@@ -29,6 +28,7 @@ events.df <- events.df %>%
   mutate(sampledate = as.Date(sampledate)) 
 ```
 
+L.V.: I initially thought this script was causing problems with salzone values beyond this point. Since then I've determined that the problem was originating elsewhere.  However it is a script that could cause problems for future data.  If you are running into issues with salzones(for f in particular) with newer data comment this code out and run it again would be a good first step.
 ```{r}
 events.df <- events.df %>%
   mutate(sampledate = as.Date(sampledate),
@@ -49,15 +49,6 @@ events.sub <- events.df %>%
   distinct()
 ```
 
-
-```{r}
-events.sub %>%
-  select(salzone) %>%
-  head()
-
-```
-
-
 Import the salinity zone used by Jacqueline M. Johnson of the Chesapeake Bay Program. This will provide a check of salinity zone classification from 10 years ago to the salinity zone classification in CEDR.
 
 ```{r}
@@ -70,6 +61,9 @@ old.salzone <- readxl::read_excel(file.path(project.dir, "data/jackie_data/JMJ_P
          sampledate = sample_date) %>% 
   distinct()
 ```
+
+L.V.: the following code was the source of the issue in which salzones were being removed.  This code is written specifically for the older data set and was confilicting with with VA ODU's structure.
+I've commented it out.
 
 <!-- Append the salinity zone defined by Jacqueline M. Johnson (`old_salzone`) to `wq.df`. -->
 <!-- ```{r} -->
@@ -116,9 +110,3 @@ bay.df <- left_join(bay.df, events.sub, by = c("source", "station",
   mutate(unique_id = paste(unique_id, season, salzone, sep = "_"))
 ```
 
-```{r}
-events.sub %>%
-  select(salzone) %>%
-  head()
-
-```

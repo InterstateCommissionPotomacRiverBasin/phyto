@@ -11,6 +11,8 @@ This section joins the phytoplankton data obtained from CEDR ([CEDR Data]) and t
 ### Taxonomic Data
 
 Phytoplankton taxonomic count data obtained from CEDR ([Download Phytoplankton Data]) is imported.
+
+L.V: the new VA_ODU_phyto_taxa.csv has been put in place of the cedr_phyto_taxa.csv in the following code.  This is the only change to this section
 ```{r}
 col.class.vec <- c("samplenumber" = "character",
                    "tsn" = "character",
@@ -113,9 +115,3 @@ Remove all unnecessary objects from the environment.
 ```{r}
 rm(col.class.vec)
 ```
-
-```{r, echo=FALSE}
-test <- bay.df %>% 
-  filter(is.na(kingdom))
-```
-

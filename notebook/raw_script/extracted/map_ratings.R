@@ -11,6 +11,12 @@ ibi.df <- ratings.df %>%
          latitude = jitter(latitude, amount = 0.01))
 
 ## ------------------------------------------------------------------------
+dir.create(file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton2"),
+           recursive = TRUE, showWarnings = TRUE)
+
+data.table::fwrite(ibi.df, file.path(rprojroot::find_rstudio_root_file(), "data/phytoplankton2", "ibi_ratings.csv"))
+
+## ------------------------------------------------------------------------
 ibi.df <- ibi.df %>% 
   mutate(rating = factor(rating, c("poor", "fair_poor", "fair", "fair_good", "good")))
 

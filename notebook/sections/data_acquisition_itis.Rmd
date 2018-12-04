@@ -3,6 +3,9 @@ title: "Untitled"
 output: html_document
 ---
 
+
+L.V.: this header is a reference to the variable established at the beginning of this document.  If run.itis.aquisition == TRUE it will run the code chunk.
+
 ```{r echo=FALSE}
 knitr::opts_chunk$set(eval=run.itis.acquisition)
 ```
@@ -10,6 +13,8 @@ knitr::opts_chunk$set(eval=run.itis.acquisition)
 The [Integrated Taxonomic Information System (ITIS) database](https://itis.gov/downloads/index.html) is a useful resource for obtaining taxonomic hierarchy information, which is necessary to compute many of the phytoplankton community metrics. The majority of taxa observed in the Chesapeake Bay and its tributaries can be found in the database; however, there are a number of taxa that require edits or are missing entirely from the database (see [Download Phytoplankton Data]). The following script uses package __ritis__ to access the ITIS API and download the necessary taxonomic hierarchy information [@ChamberlainritisIntegratedTaxonomic2017]. The ITIS API and a simple way of querying the API with __ritis__ makes this document more robust and dynamic. Anyone interested party should be able to download this documents __R Markdown__ file from Git Hub and run this script to access the ITIS database. As long as there are no changes to the API, this script can be used to access the ITIS data in subsequent years and will incorporate any subsequent changes to the ITIS database.
 
 It is not necessary to download the entire ITIS database, we only need the taxonomic hierarchy information for the phytoplankton reported in the CEDR database. Phytoplankton taxonomic count data obtained from CEDR ([Download Phytoplankton Data]) are imported. The unique list of reported taxa, represented by TSN, will be used to query the ITIS database.
+
+L.V: the new VA_ODU_phyto_taxa.csv has been put in place of the cedr_phyto_taxa.csv in the following code.  This is the only change to this section
 ```{r}
 col.class.vec <- c("samplenumber" = "character",
                    "tsn" = "character",
