@@ -18,7 +18,7 @@ link-citations: true
 evaluate <- TRUE
 cache.me <- FALSE
 run.cedr.acquisition <- FALSE
-run.itis.acquisition <- TRUE
+run.itis.acquisition <- FALSE
 ```
 
 
