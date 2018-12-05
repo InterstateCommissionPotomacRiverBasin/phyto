@@ -2,6 +2,97 @@
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 
 ## ------------------------------------------------------------------------
+# score_spring_f <- function(metrics.long) {
+#   metric.vec <- c("total_phyto_biomass_chla_ratio",
+#                   "surface_chla",
+#                   "cyanophyte_biomass",
+#                   "doc",
+#                   "pheophytin",
+#                   "total_phyto_biomass")
+#   #----------------------------------------------------------------------------
+#   metrics.sub <- metrics.long %>% 
+#     filter(season == "spring", 
+#            salzone == "f",
+#            metric %in% metric.vec)
+#   #----------------------------------------------------------------------------
+#   if (any(!metric.vec %in% unique(metrics.sub$metric))) {
+#     stop(paste("score_spring_f requires the following metric(s):",
+#                paste(metric.vec[!metric.vec %in% unique(metrics.sub$metric)], collapse = ", ")))
+#   }
+#   #----------------------------------------------------------------------------
+#   final.df <- metrics.sub %>% 
+#     mutate(score = case_when(
+#       # Jackie's code 39.28 and 41.72
+#       # Lacouture (2006) 39.3 and 41.7
+#       metric == "total_phyto_biomass_chla_ratio" & value < 39.28 ~ 1,
+#       metric == "total_phyto_biomass_chla_ratio" & value >= 39.28 & value <= 41.72 ~ 3,
+#       metric == "total_phyto_biomass_chla_ratio" & value > 41.72 ~ 5,
+#       metric == "surface_chla" & (value < 3.42 | value > 14.45) ~ 1,
+#       metric == "surface_chla" & ((value >= 3.42 & value <= 4.37) |(value >= 13.98 & value <= 14.45)) ~ 3,
+#       metric == "surface_chla" & value > 4.37 & value < 13.98 ~ 5,
+#       # Jackie's code 23.02
+#       # Lacouture (2006) 23
+#       metric == "cyanophyte_biomass" & value > 23.02 ~ 1,
+#       metric == "cyanophyte_biomass" & value <= 23.02 ~ as.numeric(NA),
+#       metric == "doc" & value > 2.40 ~ 1,
+#       metric == "doc" & value >= 2.19 & value <= 2.40 ~ 3,
+#       metric == "doc" & value < 2.19 ~ 5,
+#       metric == "pheophytin" & value > 2.50 ~ 1,
+#       metric == "pheophytin" & value >= 1.55 & value <= 2.50 ~ 3,
+#       metric == "pheophytin" & value < 1.55 ~ 5,
+#       # Jackie's code 172.99, 583.9, and 828.5
+#       # Lacouture (2006) 173, 584, and 829
+#       metric == "total_phyto_biomass"  & (value <= 172.99 | value > 828.5) ~ 1,
+#       metric == "total_phyto_biomass"  & value >= 583.9 & value <= 828.5 ~ 3,
+#       metric == "total_phyto_biomass"  & value > 172.99 & value < 583.9 ~ 5,
+#       TRUE ~ as.numeric(NA)))
+#   return(final.df)
+# }
+
+
+## ------------------------------------------------------------------------
+# score_spring_o <- function(metrics.long) {
+#   metric.vec <- c("total_phyto_biomass_chla_ratio",
+#                   "surface_chla",
+#                   "doc",
+#                   "pheophytin",
+#                   "total_phyto_biomass")
+#   #----------------------------------------------------------------------------
+#   metrics.sub <- metrics.long %>%
+#     filter(season == "spring",
+#            salzone == "o",
+#            metric %in% metric.vec)
+#   #----------------------------------------------------------------------------
+#   if (any(!metric.vec %in% unique(metrics.sub$metric))) {
+#     stop(paste("score_spring_o requires the following metric(s):",
+#                paste(metric.vec[!metric.vec %in% unique(metrics.sub$metric)], collapse = ", ")))
+#   }
+#   #----------------------------------------------------------------------------
+#   final.df <- metrics.sub %>%
+#     mutate(score = case_when(
+#       metric == "total_phyto_biomass_chla_ratio" & (value < 18.8 | value > 48.6) ~ 1,
+#       metric == "total_phyto_biomass_chla_ratio" & value >= 18.8 & value <= 21.2 ~ 3,
+#       metric == "total_phyto_biomass_chla_ratio" & value > 21.2 & value < 48.6 ~ 5,
+#       metric == "surface_chla" & (value < 6.77 | value > 33.64) ~ 1,
+#       metric == "surface_chla" & ((value >= 20.93 & value <= 33.64) |(value >= 6.77 & value <= 8.82)) ~ 3,
+#       metric == "surface_chla" & value > 8.82 & value < 20.93 ~ 5,
+#       metric == "doc" & value > 3.27 ~ 1,
+#       metric == "doc" & value >= 2.69 & value <= 3.27 ~ 3,
+#       metric == "doc" & value < 2.69 ~ 5,
+#       metric == "pheophytin" & value > 2.68 ~ 1,
+#       metric == "pheophytin" & value >= 2.23 & value <= 2.68 ~ 3,
+#       metric == "pheophytin" & value < 2.23 ~ 5,
+#       # Jackie's code 133.67, 426.31, 131.37, and 685.81
+#       # Lacouture (2006) 134, 426, 131, and 686
+#       metric == "total_phyto_biomass"  & value > 133.67 & value < 426.31 ~ 5,
+#       metric == "total_phyto_biomass"  & ((value >= 131.37 & value <= 133.67) | (value >= 426.31 & value < 685.81)) ~ 3,
+#       metric == "total_phyto_biomass"  & any(value < 131.37 | value >= 685.81) ~ 1,
+#       TRUE ~ as.numeric(NA)))
+#   return(final.df)
+# }
+
+
+## ------------------------------------------------------------------------
 ## ------------------------------------------------------------------------
 score_spring_m <- function(metrics.long) {
   metric.vec <- c("total_phyto_biomass_chla_ratio",
@@ -110,6 +201,101 @@ score_spring_p <- function(metrics.long) {
   return(final.df)
 }
 
+
+## ------------------------------------------------------------------------
+# score_summer_f <- function(metrics.long) {
+#   metric.vec <- c("surface_chla",
+#                   "cyanophyte_biomass",
+#                   "diatom_biomass",
+#                   "doc", 
+#                   "microcystis_aeruginosa_abundance",
+#                   "pheophytin", 
+#                   "total_phyto_biomass")
+#   #----------------------------------------------------------------------------
+#   metrics.sub <- metrics.long %>% 
+#     filter(season == "summer", 
+#            salzone == "f",
+#            metric %in% metric.vec)
+#   #----------------------------------------------------------------------------
+#   if (any(!metric.vec %in% unique(metrics.sub$metric))) {
+#     stop(paste("score_summer_f requires the following metric(s):",
+#                paste(metric.vec[!metric.vec %in% unique(metrics.sub$metric)], collapse = ", ")))
+#   }
+#   #----------------------------------------------------------------------------
+#   final.df <- metrics.sub %>% 
+#     mutate(score = case_when(
+#       metric == "surface_chla" & value > 12.30 ~ 1,
+#       metric == "surface_chla" & ((value >= 12.00 & value <= 12.30) | value <= 5.4) ~ 3,
+#       metric == "surface_chla" & value > 5.40 & value < 12.00 ~ 5,
+#       # Jackie's code 38.87 and 67.4
+#       # Lacouture (2006) 39 and 67
+#       metric == "cyanophyte_biomass" & value > 67.4 ~ 1,
+#       metric == "cyanophyte_biomass" & value >= 38.87 & value <= 67.4 ~ 3,
+#       metric == "cyanophyte_biomass" & value < 38.87 ~ 5,
+#       # Jackie's code 122.1 and 192.6
+#       # Lacouture (2006) 122 and 193
+#       metric == "diatom_biomass" & value > 192.6 ~ 1,
+#       metric == "diatom_biomass" & value >= 122.1 & value <= 192.6 ~ 3,
+#       metric == "diatom_biomass" & value < 122.1 ~ 5,
+#       metric == "doc" & value > 3.18 ~ 1,
+#       metric == "doc" & value >= 2.67 & value <= 3.18 ~ 3,
+#       metric == "doc" & value < 2.67 ~ 5,
+#       metric == "microcystis_aeruginosa_abundance" & value > 262507 ~ 1,
+#       metric == "microcystis_aeruginosa_abundance" & value <= 262507 ~ as.numeric(NA),
+#       metric == "pheophytin" & value > 4.30 ~ 1,
+#       metric == "pheophytin" & value >= 2.40 & value <= 4.30 ~ 3,
+#       metric == "pheophytin" & value < 2.40 ~ 5,
+#       # Jackie's code 231.3 and 555.7
+#       # Lacouture (2006) 232 and 551
+#       metric == "total_phyto_biomass"  & value > 555.7 ~ 1,
+#       metric == "total_phyto_biomass"  & value < 231.3 ~ 3,
+#       metric == "total_phyto_biomass"  & value >= 231.3 & value <= 555.7 ~ 5,
+#       TRUE ~ as.numeric(NA)))
+#   return(final.df)
+# }
+
+## ------------------------------------------------------------------------
+# score_summer_o <- function(metrics.long) {
+#   metric.vec <- c("surface_chla",
+#                   "cyanophyte_biomass",
+#                   "diatom_biomass",
+#                   "doc",
+#                   "pheophytin")
+#   #----------------------------------------------------------------------------
+#   metrics.sub <- metrics.long %>% 
+#     filter(season == "summer", 
+#            salzone == "o",
+#            metric %in% metric.vec)
+#   #----------------------------------------------------------------------------
+#   if (any(!metric.vec %in% unique(metrics.sub$metric))) {
+#     stop(paste("score_summer_o requires the following metric(s):",
+#                paste(metric.vec[!metric.vec %in% unique(metrics.sub$metric)], collapse = ", ")))
+#   }
+#   #----------------------------------------------------------------------------
+#   final.df <- metrics.sub %>% 
+#     mutate(score = case_when(
+#       metric == "surface_chla" & value >= 9.47 ~ 1,
+#       metric == "surface_chla" & value <= 4.20 ~ 3,
+#       metric == "surface_chla" & value > 4.20 & value < 9.47 ~ 5,
+#       # Jackie's code 1.79 and 26.55
+#       # Lacouture (2006) 1.8 and 27
+#       metric == "cyanophyte_biomass" & value >= 26.55 ~ 1,
+#       metric == "cyanophyte_biomass" & value < 1.79 ~ 3,
+#       metric == "cyanophyte_biomass" & value >= 1.79 & value < 26.55 ~ 5,
+#       # Jackie's code 44.14 and 126.59
+#       # Lacouture (2006) 44 and 127
+#       metric == "diatom_biomass" & value >= 126.59 ~ 1,
+#       metric == "diatom_biomass" & value <= 44.14 ~ 3,
+#       metric == "diatom_biomass" & value > 44.14 & value < 126.59 ~ 5,
+#       metric == "doc" & value > 4.00 ~ 1,
+#       metric == "doc" & value >= 3.15 & value <= 4.00 ~ 3,
+#       metric == "doc" & value < 3.15 ~ 5,
+#       metric == "pheophytin" & value > 2.81 ~ 1,
+#       metric == "pheophytin" & value >= 1.58 & value <= 2.81 ~ 3,
+#       metric == "pheophytin" & value < 1.58 ~ 5,
+#       TRUE ~ as.numeric(NA)))
+#   return(final.df)
+# }
 
 ## ------------------------------------------------------------------------
 score_summer_m <- function(metrics.long, pico.warning) {

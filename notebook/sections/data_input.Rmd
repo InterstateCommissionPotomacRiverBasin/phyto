@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 ```
 
-L.V.: this is a modified version of data_aquisition created, by Luke Vawter, for use with VA_ODU data. DO NOT USE THIS SECTION if you are pulling data from CEDR.  Use the master branch of phyto2 which uses  data_aquisition instead.
+L.V.: this is a modified version of data_aquisition created by Luke Vawter for use with VA_ODU data. DO NOT USE THIS SECTION if you are pulling data from CEDR.  Use the master branch of phyto which uses  data_aquisition instead.
 
 L.V.: as in Zach's code, the root directory is set as the phyto project base directory. Next a new directory is created,if it doesn't already exist, for storing phyto2 specific csv that this modified r markdown generates.Currently this only includes VA ODU data, but Maryland will soon follow. These files are input into the pipeline via a csv, rather than the CEDR api.  All modifications to the code are meant to address variations in ofrmatting that this new source presents. 
 

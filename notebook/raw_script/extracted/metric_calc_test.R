@@ -12,24 +12,6 @@ bay.taxa <- bay.df %>%
   mutate(biomass = if_else(is.na(biomass), 0, biomass))
 
 ## ------------------------------------------------------------------------
-bay.taxa %>%
-  select(salzone,
-       surface_chla, chla, pheophytin, doc,
-       reportingvalue, biomass, latinname, final_id,
-       division, phylum, class, species)  %>% 
-  head()
-
-## ------------------------------------------------------------------------
-bay.maxa <- bay.df %>% 
-  select(salzone,
-
-        phylum, class, species)
-
-bay.has_species <- bay.df %>%
-  filter(is.na(species))
-
-
-## ------------------------------------------------------------------------
 metrics.df <- bay.taxa %>%
   select(unique_id, salzone, surface_chla, chla, doc, pheophytin) %>%
   distinct() %>%
@@ -81,13 +63,6 @@ metrics.df <- bay.taxa %>%
     )
   ) %>%
   select(-scrippsiella_precaria_biomass)
-
-## ------------------------------------------------------------------------
-metrics.df %>%
-  select(salzone,
-       surface_chla, chla, pheophytin, doc,
-       )  %>% 
-  head()
 
 ## ------------------------------------------------------------------------
 metrics.long <- metrics.df %>% 
