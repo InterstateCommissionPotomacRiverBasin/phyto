@@ -54,7 +54,7 @@ run.itis.acquisition <- FALSE
 
 ```
 
-##Prepare Event Data Test
+##Prepare Event Data VA ODU version
 ```{r child = 'sections/prep_events_test.Rmd', eval=TRUE}
 
 ```
@@ -64,13 +64,19 @@ run.itis.acquisition <- FALSE
 
 <!-- ``` -->
 
-## Prepare Water Quality Data
-```{r child = 'sections/prep_wq.Rmd', eval=TRUE}
+##Praper Water Quality Data VA ODU version
+```{r child = 'sections/prep_wq_test.Rmd', eval=TRUE}
 
 ```
 
 
-## Metric Calculation test version(to work with info output)
+<!-- ## Prepare Water Quality Data -->
+<!-- ```{r child = 'sections/prep_wq.Rmd', eval=TRUE} -->
+
+<!-- ``` -->
+
+
+## Metric Calculation VA ODU version
 ```{r child = 'sections/metric_calc_test.Rmd', eval=TRUE}
 
 ```
@@ -87,7 +93,7 @@ run.itis.acquisition <- FALSE
 
 <!-- ``` -->
 
-## Scores Ratings test version
+## Scores Ratings VA ODU version
 ```{r child= 'sections/scores_ratings_test.Rmd', eval=TRUE}
 
 ```
