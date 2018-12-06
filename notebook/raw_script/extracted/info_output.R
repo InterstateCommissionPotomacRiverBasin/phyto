@@ -2,38 +2,42 @@
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 
 ## ------------------------------------------------------------------------
-project.dir <- rprojroot::find_rstudio_root_file()
+# test_station_tf.df <- phyto.df %>%
+#   filter(str_detect(station, "tf"))
+# 
+# test_station_ret.df <- phyto.df %>%
+#   filter(str_detect(station, "ret"))
 
-dir.create(file.path(project.dir, "data/phytoplankton2/"),
-           recursive = TRUE, showWarnings = TRUE)
-
-
-## ------------------------------------------------------------------------
-url.root <- "http://datahub.chesapeakebay.net/api.JSON"
-todays.date <- format(Sys.Date(), "%m-%d-%Y")
 
 ## ------------------------------------------------------------------------
-station.vec <- file.path(url.root,
-                       "LivingResources",
-                       "TidalPlankton",
-                       "Reported",
-                       "1-01-1970",
-                       todays.date,
-                       "17",
-                       "Station") %>% 
-  fromJSON() %>% 
-  pull(unique(MonitoringLocationId))
+wq.raw <- data.table::fread(file.path(project.dir, "data/water_quality/cedr_wq.csv"),
+                            data.table = FALSE,
+                           na.strings = c("")) %>% 
+  filter(is.na(problem),
+         parameter %in% c("chla", "doc", "pheo"))
 
 ## ------------------------------------------------------------------------
-phyto.df <- readxl::read_excel(file.path(project.dir, "data/Va_phyto_count_and_event/data-dev_2013_2016_ODU_Phyto_Reported_Data_05mar18.xlsx"))
+stations.df <- wq.raw %>% 
+  dplyr::select(station, agency, source, latitude, longitude) %>% 
+  distinct() %>% 
+  mutate(longitude = jitter(longitude, amount = 0.0005),
+         latitude = jitter(latitude, amount = 0.0005))
 
-phyto.df <- clean_up(phyto.df)
+leaflet(stations.df) %>% 
+    addProviderTiles(providers$CartoDB.Positron,
+                   options = leaflet::tileOptions(minZoom = 7, maxZoom = 18)) %>% 
+  addCircleMarkers( ~longitude, ~latitude,
+                    stroke = FALSE,
+                    fillOpacity = 0.5,
+                    popup = paste("Station:", stations.df$station, "<br/>",
+                                  "Agency:", stations.df$agency, "<br/>",
+                                  "Source:", stations.df$source, "<br/>",
+                                  "Latitude:", stations.df$latitude, "<br/>",
+                                  "Longitude:", stations.df$longitude)) %>% 
+   leaflet::setMaxBounds(lng1 = -78, lat1 = 36, lng2 = -75, lat2 = 40.5) %>% 
+  leaflet::setView(-76.4, lat = 38, zoom = 7) 
 
 ## ------------------------------------------------------------------------
-test_station_tf.df <- phyto.df %>%
-  filter(str_detect(station, "tf"))
-
-test_station_ret.df <- phyto.df %>%
-  filter(str_detect(station, "ret"))
-
+wq.df <- wq.raw %>% 
+  mutate(sampledate = as.Date(sampledate))
 

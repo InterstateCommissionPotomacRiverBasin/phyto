@@ -27,15 +27,15 @@ extracted.path <- c("notebook/raw_script/extracted")
 source.vec <- c(
 "intro.R",
 "data_input.R",
-"info_output.R",
 "data_acquisition_itis.R",
 "prep_hierarchy.R",
 "prep_carbon.R",
 # #"prep_events.R",
 "prep_events_test.R",
 "prep_station.R",
-"prep_wq.R",
-# # "metric_calc.R",
+#"prep_wq_test.R",
+#"info_output.R"
+# "metric_calc.R",
 "metric_calc_test.R",
 #  #"scores_ratings.R",
 "scores_ratings_test.R",

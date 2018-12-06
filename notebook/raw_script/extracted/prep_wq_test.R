@@ -34,40 +34,40 @@ wq.df <- wq.raw %>%
   mutate(sampledate = as.Date(sampledate))
 
 ## ------------------------------------------------------------------------
-# wq.df <- wq.df %>%
-#   mutate(pycnocline = case_when(
-#     is.na(upperpycnocline) ~ FALSE,
-#     upperpycnocline == 0 ~ FALSE,
-#     TRUE ~ TRUE
-#   ))
+wq.df <- wq.df %>%
+  mutate(pycnocline = case_when(
+    is.na(upperpycnocline) ~ FALSE,
+    upperpycnocline == 0 ~ FALSE,
+    TRUE ~ TRUE
+  ))
 
 ## ------------------------------------------------------------------------
-# issue.df <- wq.df %>% 
-#   select(monitoringstation, sampledate,
-#          pycnocline, upperpycnocline, lowerpycnocline) %>% 
-#   distinct() %>% 
-#   group_by(monitoringstation, sampledate) %>% 
-#   mutate(count = n()) %>% 
-#   ungroup() %>% 
-#   filter(count == 2,
-#          complete.cases(.)) %>% 
-#   rename(up = upperpycnocline,
-#          lp = lowerpycnocline) %>% 
-#   select(-pycnocline)
-#   
-# 
-# wq.df <- left_join(wq.df, issue.df, by = c("monitoringstation", "sampledate")) %>% 
-#   mutate(pycnocline = if_else(is.na(count), pycnocline, TRUE),
-#          upperpycnocline = if_else(is.na(up), upperpycnocline, up),
-#          lowerpycnocline = if_else(is.na(lp), lowerpycnocline, lp)
-#          )
+issue.df <- wq.df %>%
+  select(monitoringstation, sampledate,
+         pycnocline, upperpycnocline, lowerpycnocline) %>%
+  distinct() %>%
+  group_by(monitoringstation, sampledate) %>%
+  mutate(count = n()) %>%
+  ungroup() %>%
+  filter(count == 2,
+         complete.cases(.)) %>%
+  rename(up = upperpycnocline,
+         lp = lowerpycnocline) %>%
+  select(-pycnocline)
+
+
+wq.df <- left_join(wq.df, issue.df, by = c("monitoringstation", "sampledate")) %>%
+  mutate(pycnocline = if_else(is.na(count), pycnocline, TRUE),
+         upperpycnocline = if_else(is.na(up), upperpycnocline, up),
+         lowerpycnocline = if_else(is.na(lp), lowerpycnocline, lp)
+         )
 
 ## ------------------------------------------------------------------------
 wq.df <- wq.df %>% 
   select(station, source, sampledate, samplereplicatetype,
          depth, layer, 
-         #pycnocline, upperpycnocline, lowerpycnocline,
-         pdepth,
+         pycnocline, upperpycnocline, lowerpycnocline,
+         #pdepth,
          parameter, measurevalue) %>% 
   distinct()
 
@@ -89,6 +89,25 @@ avg_wq <- function(x) {
     summarize(measurevalue = mean(measurevalue, na.rm = TRUE)) %>% 
     ungroup()
 }
+
+## ------------------------------------------------------------------------
+# avg_wq_test <- function(data.df) {
+#   final.df <- data.df %>%
+#     mutate(new_var = mean(salinity, doc, chla, pheo))
+#     
+#   #return(final.df)
+# }
+#  
+# test_wq.df <- avg_wq_test(wq.df) 
+
+## ------------------------------------------------------------------------
+
+  # case_when(
+  #   sailinity_as_ppt >0 & sal <= 0.5 ~ "F",
+  #   sal > .5 &  sal <= 5 ~ "O",
+  #   sal > 5 & sal <= 18 ~ "M",
+  #   sal > 18~ "P"
+  # )
 
 ## ---- eval=FALSE, echo=FALSE---------------------------------------------
 ## # If the upper pycnocline depth is specified, then the mean for each parameter (i.e. salinity, chlorophyll a, pheophytin, DOC) is found using samples specified as above the pycnocline ("ap") and surface ("s") Buchanan et al. [-@BuchananPhytoplanktonreferencecommunities2005, p. 139]. If the upper pycnocline depth is not specified, then the mean for each parameter (i.e. salinity, chlorophyll a, pheophytin, DOC) is found using samples from the entire water column Buchanan et al. [-@BuchananPhytoplanktonreferencecommunities2005, p. 139]. Finally, join the two data frames back together to re-create `wq.df`.
