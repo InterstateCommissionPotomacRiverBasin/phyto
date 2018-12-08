@@ -164,6 +164,7 @@ L.V: assigning salzones
   # )
 ```
 
+L.V.:This code will not run because evaluate has been set to false:
 ```{r, eval=FALSE, echo=FALSE}
 # If the upper pycnocline depth is specified, then the mean for each parameter (i.e. salinity, chlorophyll a, pheophytin, DOC) is found using samples specified as above the pycnocline ("ap") and surface ("s") Buchanan et al. [-@BuchananPhytoplanktonreferencecommunities2005, p. 139]. If the upper pycnocline depth is not specified, then the mean for each parameter (i.e. salinity, chlorophyll a, pheophytin, DOC) is found using samples from the entire water column Buchanan et al. [-@BuchananPhytoplanktonreferencecommunities2005, p. 139]. Finally, join the two data frames back together to re-create `wq.df`.
 pdepth.df <- events.df %>% 

@@ -33,14 +33,14 @@ source.vec <- c(
 # #"prep_events.R",
 "prep_events_test.R",
 "prep_station.R",
-#"prep_wq_test.R",
-#"info_output.R"
-# "metric_calc.R",
-"metric_calc_test.R",
-#  #"scores_ratings.R",
-"scores_ratings_test.R",
-#  #"info_output.R"
-"map_ratings.R"#,
+# "prep_wq_test.R",
+# #"info_output.R"
+# # "metric_calc.R",
+# "metric_calc_test.R",
+# #  #"scores_ratings.R",
+# "scores_ratings_test.R",
+"info_output.R"
+# "map_ratings.R"#,
 # "validation_old_values.R",
 # "validation_scoring_disagreement.R",
 # "validation_metric_disagreement.R"

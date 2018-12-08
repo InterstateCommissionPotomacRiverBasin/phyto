@@ -4,21 +4,10 @@ author: "Luke Vawter"
 date: "November 5, 2018"
 output: html_document
 ---
+
 ```{r echo=FALSE}
 knitr::opts_chunk$set(eval=evaluate, cache=cache.me)
 ```
-
-
-```{r}
-# test_station_tf.df <- phyto.df %>%
-#   filter(str_detect(station, "tf"))
-# 
-# test_station_ret.df <- phyto.df %>%
-#   filter(str_detect(station, "ret"))
-
-```
-
-
 
 L.V.: this is a modified version of prep_wq created for use with VA_ODU data. DO NOT USE THIS SECTION if you are pulling data from CEDR.  Use the master branch of phyto which uses prep_wq instead.
 
@@ -55,9 +44,138 @@ leaflet(stations.df) %>%
   leaflet::setView(-76.4, lat = 38, zoom = 7) 
 ```
 
+## Preprocessing
 
+Dissolved organic carbon (DOC), surface chlorophyll a, and depth integrated
+chlorophyll a, and pheophytin are the four water quality parameters retained for PIBI
+calculations. These four water quality parameters are collected by the CBP water quality
+monitoring programs. PIBI metrics and the thresholds used to score the metrics depend on the
+salzone of the layer above the pycnocline where a sample was collected. Salzone is based on
+the average salinity in the above-pycnocline layer (includes surface). Dissolved organic carbon
+(DOC) chlorophyll a, and depth-integrated pheophytin are three parameters used as
+phytoplankton metrics. Depth-integrated chlorophyll a is used in calculations of chlorophyll cell content (i.e., ratio of chlorophyll a to total biomass).
+
+### Water Quality Parameters
+
+The following chunks of code summarize the water quality data according the the Methods section in Buchanan et al. [-@BuchananPhytoplanktonreferencecommunities2005, p. 139]. The water quality data is divided into separate data frames, manipulated accordingly, and then appended back together.
+
+Convert the sample date (`sampledate`) to class date.
 ```{r}
-wq.df <- wq.raw %>% 
+wq1.df <- wq.raw %>% 
   mutate(sampledate = as.Date(sampledate))
 ```
 
+Identify if there is a `pycnocline` present. If there was no reported `upperpycnocline` or `upperpycnocline` equals zero, then no `pycnocline` was detected (`FALSE`).
+
+L.V.: removed by Luke Vawter
+```{r}
+wq2.df <- wq1.df %>%
+  mutate(pycnocline = case_when(
+    is.na(upperpycnocline) ~ FALSE,
+    upperpycnocline == 0 ~ FALSE,
+    TRUE ~ TRUE
+  ))
+```
+
+Samples reported at monitoring station, CB3.3C, frequently reported an upperpycnocline for some samples but not all of the samples. This created an issue with the code above because it would duplicate the sampling event into a above pycnocline summary and a water column summary. This code identifies these duplicates and alters the `pycnocline` column to equal `TRUE` for these instances.
+
+L.V.: removed by Luke Vawter
+```{r}
+issue.df <- wq2.df %>%
+  select(monitoringstation, sampledate,
+         pycnocline, upperpycnocline, lowerpycnocline) %>%
+  distinct() %>%
+  group_by(monitoringstation, sampledate) %>%
+  mutate(count = n()) %>%
+  ungroup() %>%
+  filter(count == 2,
+         complete.cases(.)) %>%
+  rename(up = upperpycnocline,
+         lp = lowerpycnocline) %>%
+  select(-pycnocline)
+
+
+wq3.df <- left_join(wq2.df, issue.df, by = c("monitoringstation", "sampledate")) %>%
+  mutate(pycnocline = if_else(is.na(count), pycnocline, TRUE),
+         upperpycnocline = if_else(is.na(up), upperpycnocline, up),
+         lowerpycnocline = if_else(is.na(lp), lowerpycnocline, lp)
+         )
+```
+
+Keep only the necessary columns.
+```{r}
+wq4.df <- wq3.df %>% 
+  select(station, source, sampledate, samplereplicatetype,
+         depth, layer, 
+         pycnocline, upperpycnocline, lowerpycnocline,
+         #pdepth,
+         parameter, measurevalue) %>% 
+  distinct()
+```
+
+Surface chlorophyll a ("s_chla") is extracted as a separate data frame and then appended back to `wq.df`.
+```{r}
+wq5.df <- wq4.df %>% 
+  filter(layer == "s", 
+         parameter == "chla") %>% 
+  unite(parameter, c("layer", "parameter"), remove = FALSE) %>% 
+  bind_rows(wq.df)
+```
+
+Create a function to consistently aggregate and find the mean of the `measurevalue`. This function:
+1. Groups by all columns but `measurevalue` and `samplereplicatedtype`
+2. Aggregates by the grouped columns and finds the mean value of `measurevalue`
+3. Groups by all columns but `measurevalue` and `layer`
+4. Aggregates by the grouped columns and finds the mean value of `measurevalue`
+5. Groups by all columns but `measurevalue` and `depth`
+6. Aggregates by the grouped columns and finds the mean value of `measurevalue`
+```{r}
+avg_wq <- function(x) {
+  final.df <- x %>% 
+    group_by_at(vars(-measurevalue, -samplereplicatetype)) %>% 
+    summarize(measurevalue = mean(measurevalue, na.rm = TRUE)) %>% 
+    group_by_at(vars(-measurevalue, -layer)) %>%
+    summarize(measurevalue = mean(measurevalue, na.rm = TRUE)) %>%
+    group_by_at(vars(-measurevalue, -depth)) %>% 
+    summarize(measurevalue = mean(measurevalue, na.rm = TRUE)) %>% 
+    ungroup()
+}
+```
+
+```{r}
+# avg_wq_test <- function(data.df) {
+#   final.df <- data.df %>%
+#     mutate(new_var = mean(salinity, doc, chla, pheo))
+#     
+#   #return(final.df)
+# }
+#  
+# test_wq.df <- avg_wq_test(wq.df) 
+```
+
+L.V: assigning salzones
+```{r}
+
+  # case_when(
+  #   sailinity_as_ppt >0 & sal <= 0.5 ~ "F",
+  #   sal > .5 &  sal <= 5 ~ "O",
+  #   sal > 5 & sal <= 18 ~ "M",
+  #   sal > 18~ "P"
+  # )
+```
+
+
+The pychnocline depth (`pdepth`) is extracted from the the event data (`events.df`) and joined with the water quality data (`wq.df`). Only rows with a `depth` above or equal to the `pdepth` are retained. The `avg_wq()` function created above is used to find the average water quality value.
+```{r}
+pdepth.df <- events.df %>% 
+  filter(layer %in% c("ap", "wc")) %>% 
+  mutate(sampledate = as.Date(sampledate)) %>% 
+  select(station, sampledate, pdepth) %>% 
+  dplyr::distinct()
+
+wq6.df <- left_join(wq5.df, pdepth.df, by = c("station", "sampledate"))
+wq7.df <- wq6.df %>% 
+  filter(depth <= pdepth) %>% 
+  avg_wq() %>% 
+  rename(date = sampledate)
+```
