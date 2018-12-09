@@ -80,6 +80,7 @@ wq.df <- wq.df %>%
 Samples reported at monitoring station, CB3.3C, frequently reported an upperpycnocline for some samples but not all of the samples. This created an issue with the code above because it would duplicate the sampling event into a above pycnocline summary and a water column summary. This code identifies these duplicates and alters the `pycnocline` column to equal `TRUE` for these instances.
 
 L.V.: removed by Luke Vawter
+this issue does not apear to be present in VA ODU data
 ```{r}
 issue.df <- wq.df %>%
   select(monitoringstation, sampledate,

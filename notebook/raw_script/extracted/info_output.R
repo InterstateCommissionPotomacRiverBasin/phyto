@@ -76,7 +76,7 @@ wq5.df <- wq4.df %>%
   filter(layer == "s", 
          parameter == "chla") %>% 
   unite(parameter, c("layer", "parameter"), remove = FALSE) %>% 
-  bind_rows(wq.df)
+  bind_rows(wq4.df)
 
 ## ------------------------------------------------------------------------
 avg_wq <- function(x) {
