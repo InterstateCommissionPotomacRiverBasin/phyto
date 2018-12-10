@@ -4,7 +4,7 @@ output: html_document
 ---
 
 
-L.V.: this header is a reference to the variable established at the beginning of this document.  If run.itis.aquisition == TRUE it will run the code chunk.
+L.V.: this header (knitr::opts_chunk$set(eval=run.itis.acquisition)) is a reference to the variable established at the beginning of this document.  If run.itis.aquisition == TRUE it will run the code chunk.
 
 ```{r echo=FALSE}
 knitr::opts_chunk$set(eval=run.itis.acquisition)

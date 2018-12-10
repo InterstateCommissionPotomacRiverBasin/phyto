@@ -12,10 +12,25 @@ events.df <- events.df %>%
   mutate(sampledate = as.Date(sampledate)) 
 
 ## ------------------------------------------------------------------------
+events_test.df <- events.df%>%
+
+mutate(salzone = case_when(
+    events.df$station %in% c("tf3.3","tf4.2","tf5.5")~ "f",
+    #events_test.df$station == starts_with("cb")~ "good",
+    events.df$station %in% c("ret3.1","ret4.3","ret3.1")~ "o",
+    events.df$station %in% c("le3.6","le5.2","le5.4","le5.5-w")~ "p"
+    
+
+  )
+  )
+
+
+## ------------------------------------------------------------------------
 events.df <- events.df %>%
   mutate(sampledate = as.Date(sampledate),
          salzone = case_when(
            salzone %in% c("tf", "fe") ~ "f",
+           #salzone %in% c("f","tf", "fe") ~ "f",#L.V.:add back in and comment out first line as needed
            salzone %in% c("m", "me") ~ "m",
            salzone %in% c("o", "oe") ~ "o",
            salzone %in% c("p", "pe") ~ "p",
