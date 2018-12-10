@@ -34,7 +34,7 @@ run.itis.acquisition <- FALSE
 
 <!-- ``` -->
 
-## VA ODU Acquistition
+### VA ODU Acquistition
 ```{r child = 'sections/data_input.Rmd', eval=TRUE}
 
 ```
