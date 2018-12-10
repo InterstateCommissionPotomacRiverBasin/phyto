@@ -28,6 +28,24 @@ events.df <- events.df %>%
   mutate(sampledate = as.Date(sampledate)) 
 ```
 
+
+L.V.: script in development for resolving station salzone issues
+```{r}
+events_test.df <- events.df%>%
+
+mutate(salzone = case_when(
+    events_test.df$station %in% c("tf3.3","tf4.2","tf5.5")~ "F",
+    #events_test.df$station == starts_with("cb")~ "good",
+    events_test.df$station %in% c("ret3.1","ret4.3","ret3.1")~ "O",
+    events_test.df$station %in% c("le3.6","le5.2","le5.4","le5.5-w")~ "P",
+    TRUE~TRUE
+
+  )
+  )
+
+```
+
+
 L.V.: I initially thought this script was causing problems with salzone values beyond this point. Since then I've determined that the problem was originating elsewhere.  However it is a script that could cause problems for future data.  If you are running into issues with salzones(for f in particular) with newer data comment this code out and run it again would be a good first step.
 ```{r}
 events.df <- events.df %>%
